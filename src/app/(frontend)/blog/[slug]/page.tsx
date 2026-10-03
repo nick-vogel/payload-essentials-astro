@@ -19,6 +19,7 @@ import { generateArticleMeta } from '@/utilities/generateArticleMeta'
 import { unstable_cache } from 'next/cache'
 import { getPayloadClient } from '@/utilities/getPayloadClient'
 import { getCachedGlobal } from '@/utilities/getGlobals'
+import { getRelationID } from '@/utilities/getRelationID'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -168,7 +169,7 @@ const queryRelatedPosts = unstable_cache(
           not_equals: post.slug,
         },
         category: {
-          equals: post.category,
+          equals: getRelationID(post.category),
         },
       },
       populate: {
