@@ -1,3 +1,4 @@
+import path from 'path'
 import type { CollectionConfig } from 'payload'
 import { changeFilename } from './hooks/changeFilename'
 import { generateBlurData } from '@/collections/Media/hooks/generateBlurData'
@@ -39,7 +40,7 @@ export const Media: CollectionConfig = {
     }
   ],
   upload: {
-    disableLocalStorage: true,
+    staticDir: process.env.MEDIA_DIR || path.resolve(process.cwd(), 'media'),
     mimeTypes: ['image/*'],
     formatOptions: {
       format: 'webp'

@@ -34,7 +34,6 @@ import { FixedToolbarFeatureClient as FixedToolbarFeatureClient_e70f5e05f09f93e0
 import { ArrayRowLabel as ArrayRowLabel_f5e6ec638918f6f93eea6c71a5faff4c } from '@/custom/label/Component.tsx'
 import { default as default_859c04ddccc32f6c330f412554802f6f } from '@/custom/Components/Admin/Icon.tsx'
 import { default as default_3e2c4aa91e1e3b83a5a93c47a36ea0f9 } from '@/custom/Components/Admin/Logo.tsx'
-import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -75,6 +74,5 @@ export const importMap = {
   "@/custom/label/Component.tsx#ArrayRowLabel": ArrayRowLabel_f5e6ec638918f6f93eea6c71a5faff4c,
   "@/custom/Components/Admin/Icon.tsx#default": default_859c04ddccc32f6c330f412554802f6f,
   "@/custom/Components/Admin/Logo.tsx#default": default_3e2c4aa91e1e3b83a5a93c47a36ea0f9,
-  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
