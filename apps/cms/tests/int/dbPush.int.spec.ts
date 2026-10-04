@@ -1,4 +1,5 @@
 // @vitest-environment node
+import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { getPayload, type Payload } from 'payload'
 import config from '@/payload.config'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -12,7 +13,7 @@ describe('database adapter', () => {
     payload = await getPayload({ config })
   })
 
-  it('does not push the schema in development', () => {
-    expect((payload.db as { push?: boolean }).push).toBe(false)
+  it('disables schema push', () => {
+    expect((payload.db as PostgresAdapter).push).toBe(false)
   })
 })
