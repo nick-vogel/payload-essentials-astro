@@ -16,10 +16,12 @@ export const Navigation = ({
   const [menuOpen, setMenuOpen] = useState(false)
   const navRef = useRef<HTMLElement>(null)
   const pathname = usePathname()
+  const [prevPathname, setPrevPathname] = useState(pathname)
 
-  useEffect(() => {
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname)
     setMenuOpen(false)
-  }, [pathname])
+  }
 
   useEffect(() => {
     if (!menuOpen) {
