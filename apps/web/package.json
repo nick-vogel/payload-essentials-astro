@@ -6,22 +6,28 @@
   "type": "module",
   "scripts": {
     "build": "astro build",
+    "check": "astro check",
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs"
   },
   "dependencies": {
     "@astrojs/node": "11.1.6",
-    "@payloadcms/db-postgres": "3.90.1",
-    "@payloadcms/email-resend": "3.90.1",
-    "@payloadcms/plugin-seo": "3.90.1",
-    "@payloadcms/richtext-lexical": "3.90.1",
+    "@payloadcms/db-postgres": "catalog:",
+    "@payloadcms/email-resend": "catalog:",
+    "@payloadcms/plugin-seo": "catalog:",
+    "@payloadcms/richtext-lexical": "catalog:",
     "astro": "7.3.5",
     "cms": "workspace:*",
-    "payload": "3.90.1",
-    "sharp": "0.35.4"
+    "payload": "catalog:",
+    "sharp": "catalog:"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "typescript": "catalog:"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.12.0",
+    "pnpm": "^9 || ^10 || ^11"
   }
 }
