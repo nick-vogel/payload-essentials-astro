@@ -8,7 +8,9 @@ import { revalidatePath } from 'next/cache'
 export const updatePage: CollectionAfterChangeHook<Page> = ({
   doc,
   req: { payload },
+  context,
 }) => {
+  if (context.disableRevalidate) return
   const path = doc.slug === 'home' ? '/' : `/${doc.slug}/`
   payload.logger.info(`Revalidating path: ${path}`)
   revalidatePath(path)
@@ -16,7 +18,9 @@ export const updatePage: CollectionAfterChangeHook<Page> = ({
 
 export const deletePage: CollectionAfterDeleteHook<Page> = ({
   doc,
+  context,
 }) => {
+  if (context.disableRevalidate) return
   const path = doc.slug === 'home' ? '/' : `/${doc.slug}`
   revalidatePath(path)
 }
