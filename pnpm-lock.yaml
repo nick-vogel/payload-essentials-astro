@@ -6,7 +6,9 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  apps/cms:
     dependencies:
       '@next/third-parties':
         specifier: 16.3.3
