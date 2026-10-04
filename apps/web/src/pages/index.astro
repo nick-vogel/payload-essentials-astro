@@ -1,0 +1,31 @@
+---
+import config from 'cms/config'
+import { getPayload } from 'payload'
+
+const payload = await getPayload({ config })
+
+const posts = await payload.find({
+  collection: 'posts',
+  overrideAccess: false,
+  select: {
+    title: true,
+    slug: true,
+    date: true,
+  },
+  sort: '-date',
+})
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Posts</title>
+  </head>
+  <body>
+    <h1>Posts</h1>
+    <ul>
+      {posts.docs.map((post) => <li>{post.title}</li>)}
+    </ul>
+  </body>
+</html>
