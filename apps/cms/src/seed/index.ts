@@ -16,7 +16,7 @@ import {
   type Payload,
   type PayloadRequest,
 } from 'payload'
-import type { Media, Page, Post } from '@/payload-types'
+import type { CardsBlockProps, Category, Media, Page, Post, TextAndImageBlockProps } from '@/payload-types'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const cmsRoot = path.resolve(dirname, '../..')
@@ -72,9 +72,11 @@ const upload = (media: Media): BodyNode => ({
   version: 3,
 })
 
-const block = (fields: { blockType: string } & Record<string, string | RichText | object[]>): BodyNode => ({
+// The blocks a post body allows, as configured in Posts/config.ts.
+const block = (fields: TextAndImageBlockProps | CardsBlockProps): BodyNode => ({
   type: 'block',
-  fields: { id: nodeID(), blockName: '', ...fields },
+  // The generated interfaces lack the index signature the lexical node type wants.
+  fields: { ...fields, id: nodeID(), blockName: '' } as unknown as SerializedBlockNode['fields'],
   format: '',
   version: 2,
 })
@@ -89,8 +91,8 @@ const images = {
     alt: 'A wooden desk laid out with a vintage camera, letterpress type and a Back to School pennant',
   },
   mountain: { file: 'images/360-picsum-photos.webp', alt: 'A forested mountain ridge wrapped in low cloud' },
-  logoColor: { file: 'public/pe-icon.png', alt: 'Payload Essentials logo' },
-  logoWhite: { file: 'public/pe-icon-reverse.png', alt: 'Payload Essentials logo, reversed' },
+  logoColor: { file: 'images/pe-icon.png', alt: 'Payload Essentials logo' },
+  logoWhite: { file: 'images/pe-icon-reverse.png', alt: 'Payload Essentials logo, reversed' },
 }
 
 const categories = [
@@ -229,7 +231,7 @@ async function createContent(payload: Payload, req: PayloadRequest, admin: SeedA
   }
 
   payload.logger.info('Seeding categories')
-  const categoryIDs = {} as Record<CategorySlug, string>
+  const categoryIDs = {} as Record<CategorySlug, Category['id']>
   for (const category of categories) {
     const doc = await payload.create({ collection: 'categories', data: category, req })
     categoryIDs[category.slug] = doc.id
