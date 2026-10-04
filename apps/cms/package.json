@@ -5,6 +5,10 @@
   "description": "A blank template to get started with Payload 3.0",
   "license": "MIT",
   "type": "module",
+  "exports": {
+    "./config": "./src/payload.config.ts",
+    "./types": "./src/payload-types.ts"
+  },
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build --experimental-build-mode compile",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next build --experimental-build-mode generate && cross-env NODE_OPTIONS=--no-deprecation next start",

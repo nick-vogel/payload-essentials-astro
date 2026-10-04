@@ -80,6 +80,7 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URL || '',
     },
     idType: 'uuid',
+    push: false,
   }),
   sharp,
   plugins: [
