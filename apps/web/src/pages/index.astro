@@ -4,12 +4,17 @@ import { getPayload } from 'payload'
 
 const payload = await getPayload({ config })
 
+// Anonymous on purpose: Astro has no Payload `req` to pass, and
+// `overrideAccess: false` with no user applies the public read access.
+// The page has no paging UI, so it takes a fixed cap of 50 posts and
+// skips the count query that pagination would run.
 const posts = await payload.find({
   collection: 'posts',
   overrideAccess: false,
+  limit: 50,
+  pagination: false,
   select: {
     title: true,
-    slug: true,
     date: true,
   },
   sort: '-date',
