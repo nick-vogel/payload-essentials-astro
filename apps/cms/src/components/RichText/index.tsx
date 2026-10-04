@@ -1,6 +1,6 @@
 import { RichText as RichTextConverter } from '@payloadcms/richtext-lexical/react'
 import React, { JSX } from 'react'
-import { SerializedEditorState } from 'lexical'
+import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import { jsxConverters } from '@/components/RichText/converters'
 
 type Props = {
