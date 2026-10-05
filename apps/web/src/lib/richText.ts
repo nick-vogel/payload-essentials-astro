@@ -34,16 +34,19 @@ function escapeAttribute(value: string): string {
 }
 
 // An upload holds the media document, populated by the query's depth. Its URLs are relative to the
-// CMS, so this resolves them against it and optimizes the image as MediaImage does.
+// CMS, so this resolves them against it and optimizes the image as MediaImage does. The markup
+// matches MediaImage's, so the global imageWrapper class frames it the same way.
 async function uploadToHTML({ node }: { node: SerializedUploadNode }): Promise<string> {
   const file = mediaFile(node.value as Media | string, 'fullSize')
   if (!file) return ''
 
-  const { src, attributes } = await getImage({ src: file.url, width: file.width, height: file.height })
-  const attrs = Object.entries({ ...attributes, alt: file.alt })
+  const { src, srcSet, attributes } = await getImage({ src: file.url, width: file.width, height: file.height })
+  // Astro's Image adds a srcset when the transform yields one, so this does too.
+  const srcset = srcSet.values.length > 0 ? { srcset: srcSet.attribute } : {}
+  const attrs = Object.entries({ ...srcset, ...attributes, alt: file.alt })
     .map(([name, value]) => `${name}="${escapeAttribute(String(value))}"`)
     .join(' ')
-  return `<div class="upload"><img src="${escapeAttribute(src)}" ${attrs} /></div>`
+  return `<div class="upload"><div class="imageWrapper"><img src="${escapeAttribute(src)}" ${attrs} /></div></div>`
 }
 
 const converters: HTMLConvertersFunctionAsync = ({ defaultConverters }) => ({

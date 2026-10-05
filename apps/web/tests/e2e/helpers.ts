@@ -22,3 +22,13 @@ export function headMeta(page: Page) {
 export function sectionByHeading(page: Page, heading: string) {
   return page.getByRole('main').locator('section', { has: page.getByRole('heading', { name: heading, exact: true }) })
 }
+
+// The text of every script in the head that loads Google Tag Manager. Playwright's text filters skip
+// script contents, so this reads them from the DOM.
+export function gtmScripts(page: Page) {
+  return page
+    .locator('head script')
+    .evaluateAll((scripts) =>
+      scripts.map((script) => script.textContent ?? '').filter((text) => text.includes('googletagmanager.com/gtm.js')),
+    )
+}

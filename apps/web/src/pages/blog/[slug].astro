@@ -81,16 +81,11 @@ const [html, { previous, next }, related] = await Promise.all([
       padding: var(--space-8) var(--space-12);
     }
 
+    /* The box around a body upload. The global imageWrapper class inside it frames the image. */
     :global(.upload) {
       max-width: 640px;
       margin: var(--space-8) auto;
-    }
-
-    :global(.upload img) {
-      width: 100%;
-      height: auto;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
+      padding: 0 var(--space-6);
     }
   }
 </style>

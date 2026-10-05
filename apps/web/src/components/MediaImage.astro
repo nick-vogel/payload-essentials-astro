@@ -9,7 +9,8 @@ type Props = {
   class?: string
 }
 
-// The rest carries the parent's scope attribute, so the parent can style the wrapper by its class.
+// The wrapper's styles live in global.css, shared with the rich text upload converter. The rest
+// carries the parent's scope attribute, so the parent can style the wrapper by its class.
 const { image, size, class: className, ...rest } = Astro.props
 const file = mediaFile(image, size)
 ---
@@ -21,36 +22,3 @@ const file = mediaFile(image, size)
     </div>
   )
 }
-
-<style>
-  .imageWrapper {
-    position: relative;
-    border-radius: var(--radius-lg);
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    margin-bottom: var(--space-4);
-    box-shadow: var(--shadow-md);
-    transition: transform var(--transition-medium), box-shadow var(--transition-medium);
-
-    img {
-      width: 100%;
-      height: auto;
-      display: block;
-      transition: filter var(--transition-medium);
-      @media (prefers-color-scheme: dark) {
-        filter: brightness(0.85) contrast(0.9);
-      }
-    }
-
-    @media (min-width: 768px) {
-      &:hover img {
-        filter: brightness(0.98) contrast(1);
-
-        @media (prefers-color-scheme: dark) {
-          filter: brightness(0.9) contrast(0.95);
-        }
-      }
-    }
-  }
-</style>

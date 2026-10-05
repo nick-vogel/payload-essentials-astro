@@ -1,7 +1,9 @@
 ---
+import type { Post } from 'cms/types'
 import { postHref } from '../lib/links'
 
-type PostLink = { slug: string; title: string } | null
+// Links to the posts just before and after this one by date, as the Next.js site's PostNavigation did.
+type PostLink = Pick<Post, 'slug' | 'title'> | null
 
 type Props = {
   previous: PostLink
@@ -9,38 +11,37 @@ type Props = {
 }
 
 const { previous, next } = Astro.props
+
+// Each side's chevron points outward, so it sits before the text on the left and after it on the right.
+const sides = [
+  { post: previous, label: 'Previous', class: 'prev', chevron: 'm15 18-6-6 6-6' },
+  { post: next, label: 'Next', class: 'next', chevron: 'm9 18 6-6-6-6' },
+]
 ---
 
 {
   (previous || next) && (
     <nav class="nav" aria-label="Post navigation">
       <div class="inner">
-        {previous ? (
-          <a href={postHref(previous.slug)} class="link prev" aria-label={`Previous post: ${previous.title}`}>
+        {sides.map(({ post, label, class: side, chevron }) => {
+          if (!post) return <span />
+          const icon = (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="m15 18-6-6 6-6" />
+              <path d={chevron} />
             </svg>
+          )
+          const text = (
             <span class="linkContent">
-              <span class="label">Previous Post</span>
-              <span class="title">{previous.title}</span>
+              <span class="label">{label} Post</span>
+              <span class="title">{post.title}</span>
             </span>
-          </a>
-        ) : (
-          <span />
-        )}
-        {next ? (
-          <a href={postHref(next.slug)} class="link next" aria-label={`Next post: ${next.title}`}>
-            <span class="linkContent">
-              <span class="label">Next Post</span>
-              <span class="title">{next.title}</span>
-            </span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          </a>
-        ) : (
-          <span />
-        )}
+          )
+          return (
+            <a href={postHref(post.slug)} class={`link ${side}`} aria-label={`${label} post: ${post.title}`}>
+              {side === 'prev' ? [icon, text] : [text, icon]}
+            </a>
+          )
+        })}
       </div>
     </nav>
   )

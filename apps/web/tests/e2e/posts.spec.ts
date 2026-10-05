@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-import { headMeta, imageURLs } from './helpers'
+import { gtmScripts, headMeta, imageURLs, sectionByHeading } from './helpers'
 
 // Every expected value below comes from the seed in apps/cms/src/seed.
 
@@ -113,9 +113,7 @@ test.describe('posts at /blog/<slug>', () => {
     const [current, ...others] = posts.slice(4, 8)
     await page.goto(`/blog/${current.slug}`)
 
-    const related = page
-      .getByRole('main')
-      .locator('section', { has: page.getByRole('heading', { name: 'Related Posts', exact: true }) })
+    const related = sectionByHeading(page, 'Related Posts')
     const cards = related.getByRole('article')
     await expect(cards).toHaveCount(3)
     for (const [index, { slug, title }] of others.reverse().entries()) {
@@ -131,7 +129,7 @@ test.describe('posts at /blog/<slug>', () => {
     await expect(page.getByRole('main').getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible()
   })
 
-  test("puts the post's own title, canonical, Open Graph and Twitter tags in the head", async ({
+  test("puts the post's own title, canonical, Open Graph, Twitter and GTM tags in the head", async ({
     page,
     request,
     baseURL,
@@ -157,6 +155,11 @@ test.describe('posts at /blog/<slug>', () => {
     expect(ogImage).toMatch(/^https?:\/\/.*\/320[^/]*\.webp$/)
     expect((await request.get(ogImage!)).status()).toBe(200)
     expect(await meta('property', 'article:published_time')).toBe('2026-02-02T14:00:00.000Z')
+    // The modified time is the post's updatedAt, which is whenever the seed ran, so it cannot be a fixed
+    // value. It only has to be a valid ISO 8601 timestamp.
+    const modifiedTime = await meta('property', 'article:modified_time')
+    expect(modifiedTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/)
+    expect(Number.isNaN(Date.parse(modifiedTime!))).toBe(false)
     expect(await meta('property', 'article:author')).toBe('Admin')
     expect(await meta('property', 'article:section')).toBe('Releases')
 
@@ -164,5 +167,10 @@ test.describe('posts at /blog/<slug>', () => {
     expect(await meta('name', 'twitter:title')).toBe(title)
     expect(await meta('name', 'twitter:description')).toBe(summary)
     expect(await meta('name', 'twitter:image')).toBe(ogImage)
+
+    // The GTM container ID is the site settings' seeded gtmCode.
+    const gtm = await gtmScripts(page)
+    expect(gtm).toHaveLength(1)
+    expect(gtm[0]).toContain('GTM-XXXXXXX')
   })
 })
