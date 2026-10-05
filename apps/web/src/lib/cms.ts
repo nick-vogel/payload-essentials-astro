@@ -10,8 +10,9 @@ import {
 } from 'payload'
 
 // The one door from the web app to the CMS. Routes and components call only these functions.
-// Every call is anonymous with `overrideAccess: false`, so the public site gets exactly
-// what the collection and global read access allows a visitor to see. The public site never reads drafts.
+// Every call is anonymous on purpose: Astro has no Payload `req` to pass, and `overrideAccess: false`
+// with no user applies the public read access, so the public site gets exactly what the collection
+// and global read access allows a visitor to see. The public site never reads drafts.
 
 // Payload's own find constrains TSelect to both of these.
 type Select<TSlug extends CollectionSlug> = TypedCollectionSelect[TSlug] & SelectType

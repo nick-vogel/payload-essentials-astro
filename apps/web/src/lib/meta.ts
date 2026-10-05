@@ -1,5 +1,5 @@
 import type { Page, Post } from 'cms/types'
-import { isMedia, mediaFile } from './media'
+import { mediaFile } from './media'
 
 // The metadata a route hands to the base layout. The layout fills the gaps from the Settings global.
 export type PageMeta = {
@@ -16,6 +16,6 @@ export function docMeta(doc: Page | Post): PageMeta {
     title: doc.meta?.title || doc.title,
     description: doc.meta?.description || ('summary' in doc ? doc.summary : null),
     canonical: doc.meta?.canonicalUrl,
-    image: isMedia(image) ? mediaFile(image, 'og')?.url : null,
+    image: mediaFile(image, 'og')?.url,
   }
 }

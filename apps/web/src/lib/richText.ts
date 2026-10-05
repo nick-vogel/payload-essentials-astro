@@ -5,17 +5,20 @@ import {
   type HTMLConvertersFunctionAsync,
   LinkHTMLConverterAsync,
 } from '@payloadcms/richtext-lexical/html-async'
-import { pageHref } from './links'
+import { pageHref, postHref } from './links'
 
 // An internal link holds the linked document, populated by the query's depth.
 function internalDocToHref({ linkNode }: { linkNode: SerializedLinkNode }): string {
   const { value, relationTo } = linkNode.fields.doc!
-  if (typeof value !== 'object') throw new Error(`Internal link to ${relationTo} is not populated`)
+  // Pages and posts both require a slug, so a missing one means the depth did not reach the link.
+  if (typeof value !== 'object' || typeof value.slug !== 'string') {
+    throw new Error(`Internal link to ${relationTo} is not populated`)
+  }
 
-  const slug = value.slug as string
+  const { slug } = value
   switch (relationTo) {
     case 'posts':
-      return `/blog/${slug}`
+      return postHref(slug)
     case 'pages':
       return pageHref(slug)
     default:

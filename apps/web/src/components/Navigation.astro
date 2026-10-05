@@ -1,12 +1,12 @@
 ---
-import type { Nav, Setting } from 'cms/types'
 import Logo from './Logo.astro'
-import { pageHref } from '../lib/links'
+import type { ChromeProps } from '../lib/chrome'
+import { navLinks, pageHref } from '../lib/links'
 
-type Props = Pick<Nav, 'navItems'> & Pick<Setting, 'logoColor' | 'logoWhite'>
+type Props = ChromeProps
 
 const { navItems, logoColor, logoWhite } = Astro.props
-const links = (navItems ?? []).flatMap(({ link }) => (typeof link === 'object' ? [link] : []))
+const links = navLinks(navItems)
 ---
 
 <nav class="navigation" aria-label="Main navigation" data-navigation>

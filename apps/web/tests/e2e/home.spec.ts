@@ -80,6 +80,8 @@ test.describe('home page', () => {
 
     await page.keyboard.press('Escape')
     await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    // Focus returns to the button that opened the menu, so keyboard users keep their place.
+    await expect(toggle).toBeFocused()
     await expect(toggle).toHaveAccessibleName('Open menu')
     await expect(blogLink).not.toBeInViewport()
     expect(await page.evaluate(() => getComputedStyle(document.body).overflow)).not.toBe('hidden')

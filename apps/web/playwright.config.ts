@@ -1,11 +1,21 @@
 import os from 'os'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import { defineConfig, devices } from '@playwright/test'
+import { loadEnv } from 'payload/node'
 
-// The suite runs the web app against a CMS on its own database and media folder,
-// so every run starts from the seed and never touches your development content.
+// The end-to-end suite starts its own CMS and web app and never touches your development content:
+// - The CMS runs on its own database, the one in DATABASE_URL with -e2e appended. Every run drops
+//   everything in it with migrate:fresh and seeds it again.
+// - Uploads go to a temporary MEDIA_DIR in the OS temp folder, emptied at the start of every run.
+// - The CMS listens on E2E_CMS_PORT (default 3100) and the web app on E2E_WEB_PORT (default 4400).
+
+// Loads apps/web/.env, .env.local and the rest into process.env, as astro.config.mjs does.
+// Variables already set in the shell win over the files.
+loadEnv(path.dirname(fileURLToPath(import.meta.url)))
+
 if (!process.env.DATABASE_URL || !process.env.PAYLOAD_SECRET) {
-  throw new Error('Set DATABASE_URL and PAYLOAD_SECRET before you run the end-to-end tests.')
+  throw new Error('Set DATABASE_URL and PAYLOAD_SECRET in apps/web/.env before you run the end-to-end tests.')
 }
 
 const database = new URL(process.env.DATABASE_URL)
@@ -17,7 +27,13 @@ const webPort = Number(process.env.E2E_WEB_PORT || 4400)
 const cmsURL = `http://127.0.0.1:${cmsPort}`
 const webURL = `http://127.0.0.1:${webPort}`
 
-const env = { ...process.env, DATABASE_URL: database.toString(), MEDIA_DIR: mediaDir } as Record<string, string>
+// The servers' env takes strings only, so unset variables drop out. So does the flag loadEnv sets,
+// which would stop the CMS from loading its own .env files.
+const env = Object.fromEntries(
+  Object.entries({ ...process.env, DATABASE_URL: database.toString(), MEDIA_DIR: mediaDir }).filter(
+    (entry): entry is [string, string] => entry[1] !== undefined && entry[0] !== '__NEXT_PROCESSED_ENV',
+  ),
+)
 
 export default defineConfig({
   testDir: './tests/e2e',

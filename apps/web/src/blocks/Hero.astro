@@ -3,7 +3,7 @@ import { Image } from 'astro:assets'
 import type { HeroBlockProps } from 'cms/types'
 import Header from '../components/Header.astro'
 import { pageHref } from '../lib/links'
-import { isMedia, mediaFile } from '../lib/media'
+import { mediaFile } from '../lib/media'
 
 type Props = HeroBlockProps
 
@@ -12,8 +12,7 @@ const ctas = [
   { page: primaryCTA, class: 'primaryCta' },
   { page: secondaryCTA, class: 'secondaryCta' },
 ].flatMap(({ page, class: className }) => (typeof page === 'object' && page ? [{ ...page, className }] : []))
-const image = showHeroImage && isMedia(heroImage) ? mediaFile(heroImage, 'fullSize') : null
-const alt = isMedia(heroImage) ? heroImage.alt : ''
+const image = showHeroImage ? mediaFile(heroImage, 'fullSize') : null
 ---
 
 <section class="hero">
@@ -38,7 +37,7 @@ const alt = isMedia(heroImage) ? heroImage.alt : ''
         <Image
           class="image"
           src={image.url}
-          alt={alt}
+          alt={image.alt}
           width={image.width}
           height={image.height}
           loading="eager"

@@ -12,6 +12,9 @@ loadEnv()
 const { payloadURL } = await import('./src/lib/payloadURL.ts')
 
 export default defineConfig({
+  // The public URL of the web app, for og:url when a page has no canonical and for the sitemap.
+  // Optional: without it, the layout falls back to the request's own origin.
+  site: process.env.SITE_URL || undefined,
   output: 'server',
   adapter: node({
     mode: 'standalone',

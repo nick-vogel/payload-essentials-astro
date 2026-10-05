@@ -7,17 +7,18 @@ import type { PageMeta } from '../lib/meta'
 
 type Props = PageMeta
 
+const { title: pageTitle, description: pageDescription, canonical, image } = Astro.props
+
 const settings = await findGlobal('settings', { depth: 1 })
 const nav = await findGlobal('nav', { depth: 1 })
 
 // The same fallbacks as the Next.js root layout and generateMeta.
 const siteName = settings.siteName || 'Payload Essentials'
-const title = Astro.props.title ? `${Astro.props.title} | ${siteName}` : siteName
-const socialTitle = Astro.props.title || siteName
-const description = Astro.props.description || settings.siteDescription || ''
-const canonical = Astro.props.canonical
-const url = canonical || Astro.url.origin
-const image = Astro.props.image
+const title = pageTitle ? `${pageTitle} | ${siteName}` : siteName
+const socialTitle = pageTitle || siteName
+const description = pageDescription || settings.siteDescription || ''
+// SITE_URL sets Astro.site. The request origin is the last resort, and is wrong behind a proxy.
+const url = canonical || Astro.site?.href || Astro.url.origin
 const gtmCode = settings.gtmCode
 ---
 
@@ -36,6 +37,9 @@ const gtmCode = settings.gtmCode
     <meta property="og:url" content={url} />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:locale" content="en_US" />
+    {/* Deliberately unlike the Next.js site. Its generateMeta passed openGraph.image (singular), */}
+    {/* which Next ignores, so it sent no image and a summary card. This layout sends both image tags */}
+    {/* and summary_large_image, as the spec intends. */}
     {image && <meta property="og:image" content={image} />}
     <meta property="og:type" content="website" />
 
@@ -63,18 +67,6 @@ const gtmCode = settings.gtmCode
     }
   </head>
   <body>
-    {
-      gtmCode && (
-        <noscript>
-          <iframe
-            src={`https://www.googletagmanager.com/ns.html?id=${gtmCode}`}
-            height="0"
-            width="0"
-            style="display:none;visibility:hidden"
-          />
-        </noscript>
-      )
-    }
     <Navigation navItems={nav.navItems} logoColor={settings.logoColor} logoWhite={settings.logoWhite} />
     <main><slot /></main>
     <Footer navItems={nav.navItems} logoColor={settings.logoColor} logoWhite={settings.logoWhite} />
