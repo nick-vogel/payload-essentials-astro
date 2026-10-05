@@ -4,11 +4,13 @@ import { postHref } from '../lib/links'
 import Header from './Header.astro'
 import MediaImage from './MediaImage.astro'
 
-type Props = { post: PostPreviewData }
+// The two cards of the Next.js site. The blog list uses the default card, with the category badge.
+// The related posts use the compact card, with no badge, a lighter shadow and smaller type.
+type Props = { post: PostPreviewData; variant?: 'default' | 'compact' }
 
-const { post } = Astro.props
+const { post, variant = 'default' } = Astro.props
 const { slug, title, featuredImage, populatedAuthor: author, category, date, date_tz } = post
-const categoryName = category && typeof category === 'object' ? category.name : null
+const categoryName = variant === 'default' && category && typeof category === 'object' ? category.name : null
 const formattedDate = date
   ? new Date(date).toLocaleString('en-US', {
       year: 'numeric',
@@ -20,7 +22,7 @@ const formattedDate = date
 ---
 
 {/* The title link stretches over the whole card, so the card is one link named by its title. */}
-<article class="card">
+<article class:list={['card', variant]}>
   <div class="imageArea">
     {
       categoryName && (
@@ -157,6 +159,24 @@ const formattedDate = date
 
     span {
       white-space: nowrap;
+    }
+  }
+
+  .compact {
+    box-shadow: var(--shadow-sm);
+
+    @media (min-width: 768px) {
+      &:hover {
+        box-shadow: var(--shadow-md);
+      }
+    }
+
+    .content {
+      padding: var(--space-4);
+    }
+
+    .meta {
+      font-size: 0.8125rem;
     }
   }
 

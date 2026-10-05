@@ -8,7 +8,7 @@ import type { PageMeta } from '../lib/meta'
 
 type Props = PageMeta
 
-const { title: pageTitle, description: pageDescription, canonical, image } = Astro.props
+const { title: pageTitle, description: pageDescription, canonical, image, article } = Astro.props
 
 const settings = await findGlobal('settings', { depth: 1 })
 const nav = await findGlobal('nav', { depth: 1 })
@@ -41,7 +41,11 @@ const gtmCode = settings.gtmCode
     {/* which Next ignores, so it sent no image and a summary card. This layout sends both image tags */}
     {/* and summary_large_image, as the spec intends. */}
     {image && <meta property="og:image" content={image} />}
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={article ? 'article' : 'website'} />
+    {article?.publishedTime && <meta property="article:published_time" content={article.publishedTime} />}
+    {article?.modifiedTime && <meta property="article:modified_time" content={article.modifiedTime} />}
+    {article?.author && <meta property="article:author" content={article.author} />}
+    {article?.section && <meta property="article:section" content={article.section} />}
 
     {/* Next.js fills the Twitter tags from Open Graph, so these repeat the values above. */}
     <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
