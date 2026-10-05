@@ -186,3 +186,182 @@ svg {
         }
     }
 }
+
+/*
+ * A Cards or TextAndImage block inside rich text. The converters render it as an HTML string, which
+ * carries no scope attribute, so these rules copy the scoped styles of Section, Container, Header,
+ * Body and the two block components. Keep them in step with those components.
+ */
+.richTextBlock {
+    position: relative;
+    padding: var(--space-12) var(--space-6);
+    overflow: hidden;
+
+    @media (min-width: 768px) {
+        padding: var(--space-16) var(--space-8);
+    }
+
+    @media (min-width: 1024px) {
+        padding: var(--space-20) var(--space-12);
+    }
+
+    &[data-background="primary"] {
+        background-color: var(--section-bg-primary);
+    }
+
+    &[data-background="secondary"] {
+        background-color: var(--section-bg-secondary);
+    }
+
+    > .container {
+        max-width: var(--container-max);
+        margin: 0 auto;
+    }
+
+    .h2,
+    .h3 {
+        line-height: 1.3;
+    }
+
+    .h2 {
+        font-size: 2rem;
+        margin: 0 auto var(--space-8);
+        line-height: 1.2;
+        font-weight: 700;
+        text-align: center;
+
+        @media (min-width: 768px) {
+            font-size: 2.5rem;
+            margin-bottom: var(--space-12);
+        }
+
+        @media (min-width: 1024px) {
+            font-size: 3rem;
+            margin-bottom: var(--space-16);
+        }
+    }
+
+    .h3 {
+        font-size: 1.125rem;
+        margin: 0;
+        font-weight: 400;
+
+        @media (min-width: 769px) {
+            font-size: 1.175rem;
+        }
+
+        @media (min-width: 1024px) {
+            font-size: 1.2rem;
+        }
+    }
+
+    .left {
+        text-align: left;
+    }
+
+    .center {
+        text-align: center;
+    }
+
+    .body {
+        font-size: 1rem;
+        line-height: 1.6;
+
+        @media (min-width: 768px) {
+            font-size: 1.125rem;
+            line-height: 1.7;
+        }
+
+        p:first-child {
+            margin-top: 0;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    /* TextAndImage */
+    .layout {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-8);
+
+        @media (min-width: 768px) {
+            flex-direction: row;
+            align-items: flex-start;
+            gap: var(--space-12);
+        }
+    }
+
+    .layout[data-layout="left"] {
+        @media (min-width: 768px) {
+            flex-direction: row-reverse;
+        }
+    }
+
+    .textContent,
+    .layout > .image {
+        flex: 1;
+    }
+
+    /* Cards */
+    .grid {
+        margin: 0 auto;
+        display: grid;
+        gap: var(--space-8);
+        grid-template-columns: 1fr;
+
+        @media (min-width: 768px) {
+            gap: var(--space-4);
+
+            &[data-cards="2"],
+            &[data-cards="4"] {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            &[data-cards="3"] {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            &[data-cards="4"] {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    }
+
+    .card {
+        display: flex;
+        flex-direction: column;
+
+        &:hover > .image,
+        &:hover > .content {
+            @media (min-width: 768px) {
+                transform: translateY(-4px);
+                box-shadow: var(--shadow-lg);
+            }
+        }
+    }
+
+    .content {
+        padding: var(--space-6);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        flex: 1;
+        background-color: light-dark(var(--white), var(--black));
+        box-shadow: var(--shadow-md);
+        border-radius: var(--radius-lg);
+        transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+
+        @media (min-width: 768px) {
+            padding: var(--space-8);
+        }
+    }
+
+    .title {
+        color: light-dark(var(--black), var(--white));
+    }
+}

@@ -1,9 +1,9 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 
-// The absolute URL of every image and srcset candidate on the page.
-export function imageURLs(page: Page) {
-  return page.evaluate(() => {
-    const candidates = [...document.querySelectorAll('img, source')].flatMap((element) => [
+// The absolute URL of every image and srcset candidate on the page, or inside the given element.
+export function imageURLs(page: Page, within: Locator = page.locator(':root')) {
+  return within.evaluate((root) => {
+    const candidates = [...root.querySelectorAll('img, source')].flatMap((element) => [
       element.getAttribute('src'),
       ...(element.getAttribute('srcset') ?? '').split(',').map((entry) => entry.trim().split(/\s+/)[0]),
     ])
