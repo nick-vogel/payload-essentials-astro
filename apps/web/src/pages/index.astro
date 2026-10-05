@@ -1,26 +1,11 @@
 ---
-import Blocks from '../blocks/Blocks.astro'
-import Base from '../layouts/Base.astro'
-import { findBySlug } from '../lib/cms'
+import PageView from '../layouts/PageView.astro'
+import { findPage } from '../lib/cms'
 import { HOME_SLUG } from '../lib/links'
-import { docMeta } from '../lib/meta'
 
-const page = await findBySlug('pages', HOME_SLUG, {
-  populate: {
-    media: {
-      url: true,
-      width: true,
-      height: true,
-      alt: true,
-      sizes: { fullSize: true, og: true },
-    },
-  },
-})
+const page = await findPage(HOME_SLUG)
 
-// A bare 404 until the [slug] ticket adds the 404 page.
-if (!page) return new Response(null, { status: 404 })
+if (!page) return Astro.rewrite('/404')
 ---
 
-<Base {...docMeta(page)}>
-  <Blocks blocks={page.blocks} />
-</Base>
+<PageView page={page} />

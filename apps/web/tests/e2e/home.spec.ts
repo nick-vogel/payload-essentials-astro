@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { headMeta, imageURLs } from './helpers'
+
 // Every expected value below comes from the seed in apps/cms/src/seed.
 test.describe('home page', () => {
   test('shows the seeded Hero and Text blocks, the navigation and the footer', async ({ page }) => {
@@ -37,13 +39,7 @@ test.describe('home page', () => {
   test('serves every image URL on the page', async ({ page, request }) => {
     await page.goto('/')
 
-    const urls = await page.evaluate(() => {
-      const candidates = [...document.querySelectorAll('img, source')].flatMap((element) => [
-        element.getAttribute('src'),
-        ...(element.getAttribute('srcset') ?? '').split(',').map((entry) => entry.trim().split(/\s+/)[0]),
-      ])
-      return [...new Set(candidates.filter(Boolean).map((url) => new URL(url!, location.href).href))]
-    })
+    const urls = await imageURLs(page)
 
     // The hero image and the two logos in the navigation and the footer.
     expect(urls.length).toBeGreaterThanOrEqual(3)
@@ -94,8 +90,7 @@ test.describe('home page', () => {
   }) => {
     await page.goto('/')
     const head = page.locator('head')
-    const meta = (attribute: 'name' | 'property', key: string) =>
-      head.locator(`meta[${attribute}="${key}"]`).getAttribute('content')
+    const meta = headMeta(page)
 
     const title = 'Home'
     const description = 'Learn everything you need to get started with Payload.'

@@ -1,0 +1,52 @@
+---
+import type { TextAndImageBlockProps } from 'cms/types'
+import Body from '../components/Body.astro'
+import Container from '../components/Container.astro'
+import Header from '../components/Header.astro'
+import MediaImage from '../components/MediaImage.astro'
+import Section from '../components/Section.astro'
+import { richTextToHTML } from '../lib/richText'
+
+// The bare block fields, so the rich text converter can render this block too.
+type Props = TextAndImageBlockProps
+
+const { header, backgroundColor, layout, image, body } = Astro.props
+const html = await richTextToHTML(body)
+---
+
+<Section backgroundColor={backgroundColor}>
+  <Container>
+    {header && <Header>{header}</Header>}
+    <div class="layout" data-layout={layout || 'left'}>
+      <div class="textContent">
+        <Body><Fragment set:html={html} /></Body>
+      </div>
+      <MediaImage image={image} size="fullSize" class="image" />
+    </div>
+  </Container>
+</Section>
+
+<style>
+  .layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: var(--space-12);
+    }
+  }
+
+  .layout[data-layout="left"] {
+    @media (min-width: 768px) {
+      flex-direction: row-reverse;
+    }
+  }
+
+  .textContent,
+  .image {
+    flex: 1;
+  }
+</style>

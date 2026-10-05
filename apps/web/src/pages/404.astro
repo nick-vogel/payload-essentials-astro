@@ -1,0 +1,22 @@
+---
+import Container from '../components/Container.astro'
+import Header from '../components/Header.astro'
+import Section from '../components/Section.astro'
+import Base from '../layouts/Base.astro'
+---
+
+<Base title="Page not found" description="The page you are looking for does not exist.">
+  <Section>
+    <Container>
+      <Header as="h1" align="center">Page not found</Header>
+      <p class="message">The page you are looking for does not exist or has moved.</p>
+      <p class="message"><a href="/">Go to the home page</a></p>
+    </Container>
+  </Section>
+</Base>
+
+<style>
+  .message {
+    text-align: center;
+  }
+</style>

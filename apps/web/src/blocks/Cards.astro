@@ -1,0 +1,103 @@
+---
+import type { CardsBlockProps } from 'cms/types'
+import Body from '../components/Body.astro'
+import Container from '../components/Container.astro'
+import Header from '../components/Header.astro'
+import MediaImage from '../components/MediaImage.astro'
+import Section from '../components/Section.astro'
+import { richTextToHTML } from '../lib/richText'
+
+// The bare block fields, so the rich text converter can render this block too.
+type Props = CardsBlockProps
+
+const { header, backgroundColor, cardsArray } = Astro.props
+const cards = await Promise.all(
+  (cardsArray ?? []).map(async (card) => ({ ...card, html: await richTextToHTML(card.body) })),
+)
+---
+
+<Section backgroundColor={backgroundColor}>
+  <Container>
+    {header && <Header>{header}</Header>}
+    {
+      cards.length > 0 && (
+        <div class="grid" data-cards={cards.length}>
+          {cards.map((card) => (
+            <article class="card">
+              <MediaImage image={card.image} size="card" class="image" />
+              <div class="content">
+                <Header as="h3" class="title" align="left">
+                  {card.title}
+                </Header>
+                <Body>
+                  <Fragment set:html={card.html} />
+                </Body>
+              </div>
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </Container>
+</Section>
+
+<style>
+  .grid {
+    margin: 0 auto;
+    display: grid;
+    gap: var(--space-8);
+    grid-template-columns: 1fr;
+
+    @media (min-width: 768px) {
+      gap: var(--space-4);
+
+      &[data-cards="2"],
+      &[data-cards="4"] {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      &[data-cards="3"] {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      &[data-cards="4"] {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+
+    &:hover > .image,
+    &:hover > .content {
+      @media (min-width: 768px) {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+      }
+    }
+  }
+
+  .content {
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    flex: 1;
+    background-color: light-dark(var(--white), var(--black));
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
+    transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+
+    @media (min-width: 768px) {
+      padding: var(--space-8);
+    }
+  }
+
+  .title {
+    color: light-dark(var(--black), var(--white));
+  }
+</style>
