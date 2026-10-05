@@ -2,6 +2,11 @@ import { type GlobalConfig } from 'payload'
 
 export const Navigation: GlobalConfig = {
   slug: 'nav',
+  access: {
+    // The Astro site reads this global without a user.
+    read: () => true,
+    update: ({ req }) => Boolean(req.user),
+  },
   fields: [
     {
       name: 'navItems',

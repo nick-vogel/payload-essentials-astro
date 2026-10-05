@@ -2,6 +2,11 @@ import { type GlobalConfig } from 'payload'
 
 export const Settings: GlobalConfig = {
   slug: 'settings',
+  access: {
+    // The Astro site reads this global without a user.
+    read: () => true,
+    update: ({ req }) => Boolean(req.user),
+  },
   fields: [
     {
       type: 'text',
