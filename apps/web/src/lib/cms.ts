@@ -108,3 +108,16 @@ export function findPostPreviews(
 }
 
 export type PostPreviewData = Awaited<ReturnType<typeof findPostPreviews>>['docs'][number]
+
+// The categories the blog filter offers, by name. As in the Next.js CategoryFilter, a category whose
+// only post is the featured post stays out, because the grid never shows the featured post. The join
+// brings back at most one other post, which is enough to tell.
+export async function findFilterCategories() {
+  const { docs } = await find('categories', {
+    select: { name: true, slug: true, relatedPosts: true },
+    joins: { relatedPosts: { where: { featured: { not_equals: true } }, limit: 1 } },
+    sort: 'name',
+    pagination: false,
+  })
+  return docs.filter((category) => category.relatedPosts?.docs?.length)
+}

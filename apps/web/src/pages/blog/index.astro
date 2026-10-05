@@ -1,0 +1,106 @@
+---
+import Card from '../../components/Card.astro'
+import CardContainer from '../../components/CardContainer.astro'
+import CategoryFilter from '../../components/CategoryFilter.astro'
+import Container from '../../components/Container.astro'
+import Header from '../../components/Header.astro'
+import Pagination from '../../components/Pagination.astro'
+import PostPreview from '../../components/PostPreview.astro'
+import Section from '../../components/Section.astro'
+import Base from '../../layouts/Base.astro'
+import { findFilterCategories, findPage, findPostPreviews } from '../../lib/cms'
+import { blogHref } from '../../lib/links'
+import { docMeta } from '../../lib/meta'
+
+const POSTS_PER_PAGE = 8
+
+const pageParam = Astro.url.searchParams.get('page')
+const category = Astro.url.searchParams.get('category') || null
+
+// Page 1 has no param. Anything but a whole number from 1 up is not a page of the list.
+if (pageParam !== null && !/^[1-9]\d*$/.test(pageParam)) return Astro.rewrite('/404')
+const currentPage = pageParam ? Number(pageParam) : 1
+
+// The grid never shows the featured post, which sits above it on every page and every category.
+const [page, featuredPosts, categories, posts] = await Promise.all([
+  findPage('blog'),
+  findPostPreviews({ where: { featured: { equals: true } }, limit: 1, pagination: false }),
+  findFilterCategories(),
+  findPostPreviews({
+    where: {
+      and: [{ featured: { not_equals: true } }, ...(category ? [{ 'category.slug': { equals: category } }] : [])],
+    },
+    sort: '-date',
+    page: currentPage,
+    limit: POSTS_PER_PAGE,
+  }),
+])
+
+if (!page) return Astro.rewrite('/404')
+if (currentPage > 1 && currentPage > posts.totalPages) return Astro.rewrite('/404')
+
+// With no featured post, the latest post takes its place, as in the Next.js blog page.
+const featured =
+  featuredPosts.docs[0] ?? (await findPostPreviews({ sort: '-date', limit: 1, pagination: false })).docs[0]
+---
+
+<Base {...docMeta(page)}>
+  <Section>
+    <Container>
+      <Header as="h1" align="left" class="pageTitle">{page.title}</Header>
+      {
+        featured && (
+          <>
+            <Header align="left" class="featuredTitle">
+              {featuredPosts.docs[0] ? 'Featured post' : 'Latest post'}
+            </Header>
+            <PostPreview post={featured} imageSize="fullSize" />
+          </>
+        )
+      }
+    </Container>
+  </Section>
+  <Section backgroundColor="secondary">
+    <Container>
+      <Header>More posts</Header>
+      <CategoryFilter categories={categories} currentCategory={category} />
+      {
+        posts.docs.length > 0 ? (
+          <CardContainer>
+            {posts.docs.map((post) => (
+              <Card post={post} />
+            ))}
+          </CardContainer>
+        ) : (
+          <p class="empty">{category ? 'No posts in this category yet.' : 'No posts yet.'}</p>
+        )
+      }
+      <Pagination
+        currentPage={currentPage}
+        totalPages={posts.totalPages}
+        href={(pageNumber) => blogHref({ page: pageNumber, category })}
+      />
+    </Container>
+  </Section>
+</Base>
+
+<style>
+  .pageTitle {
+    margin-top: 0;
+  }
+
+  .featuredTitle {
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-6);
+
+    @media (max-width: 768px) {
+      margin-bottom: var(--space-4);
+    }
+  }
+
+  .empty {
+    text-align: center;
+  }
+</style>

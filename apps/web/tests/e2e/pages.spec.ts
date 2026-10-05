@@ -62,14 +62,7 @@ test.describe('pages at their slug', () => {
     }
   })
 
-  // The blog page has no blocks yet, and renders here until the blog index route takes it over.
-  test('the blog page renders with its own title', async ({ page }) => {
-    const response = await page.goto('/blog')
-    expect(response?.status()).toBe(200)
-    await expect(page).toHaveTitle('Blog | Payload Essentials')
-  })
-
-  for (const path of ['/about', '/contact', '/blog', '/']) {
+  for (const path of ['/about', '/contact', '/']) {
     test(`serves every image URL on ${path}`, async ({ page, request }) => {
       await page.goto(path)
 

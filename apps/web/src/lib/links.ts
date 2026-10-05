@@ -21,3 +21,12 @@ export function navLinks(navItems: Nav['navItems']): Page[] {
 export function siteOrigin({ site, url }: { site: URL | undefined; url: URL }): string {
   return site?.href ?? url.origin
 }
+
+// The blog list at a page and a category. Page 1 and no category leave their param out.
+export function blogHref({ page = 1, category }: { page?: number; category?: string | null } = {}): string {
+  const params = new URLSearchParams()
+  if (category) params.set('category', category)
+  if (page > 1) params.set('page', String(page))
+  const query = params.toString()
+  return query ? `/blog?${query}` : '/blog'
+}
