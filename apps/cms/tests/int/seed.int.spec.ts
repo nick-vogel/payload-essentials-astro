@@ -108,6 +108,25 @@ describe('seed', () => {
     }
   })
 
+  // A Local API save from a script or the web app has no Next.js request around it.
+  it('saves a page, a post and both globals outside a Next.js request', async () => {
+    const [page] = (await payload.find({ collection: 'pages', limit: 1, depth: 0 })).docs
+    const [post] = (await payload.find({ collection: 'posts', limit: 1, depth: 0 })).docs
+
+    await expect(
+      payload.update({ collection: 'pages', id: page.id, data: { title: `${page.title} (edited)` } }),
+    ).resolves.toMatchObject({ title: `${page.title} (edited)` })
+    await expect(
+      payload.update({ collection: 'posts', id: post.id, data: { title: `${post.title} (edited)` } }),
+    ).resolves.toMatchObject({ title: `${post.title} (edited)` })
+    await expect(
+      payload.updateGlobal({ slug: 'settings', data: { siteName: 'Edited site' } }),
+    ).resolves.toMatchObject({ siteName: 'Edited site' })
+    await expect(payload.updateGlobal({ slug: 'nav', data: { navItems: [] } })).resolves.toMatchObject({
+      navItems: [],
+    })
+  })
+
   it('refuses to run on a database that already has content', async () => {
     await expect(
       seed({ payload, admin: { email: 'seed-test-2@example.com', password: 'seed-test' } }),

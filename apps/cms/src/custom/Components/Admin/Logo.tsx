@@ -1,16 +1,16 @@
+import type { ServerProps } from 'payload'
 import GraphicClient from './index.client'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { Media } from '@/payload-types'
 import { isDoc } from '@/utilities/isDoc'
-import { getCachedGlobal } from '@/utilities/getGlobals'
 
-export const Logo = async () => {
-  const settings = await getCachedGlobal('settings', 1, {
-    logoColor: true,
-    logoWhite: true,
-  })()
-  if (!settings) return null
+// The login page shows the graphics before anyone signs in, so the read keeps
+// the Local API's default access override.
+export const Logo = async ({ payload }: ServerProps) => {
+  const settings = await payload.findGlobal({
+    slug: 'settings',
+    depth: 1,
+    select: { logoColor: true, logoWhite: true },
+  })
   if (
     !isDoc<Media>(settings.logoColor) ||
     !isDoc<Media>(settings.logoWhite)

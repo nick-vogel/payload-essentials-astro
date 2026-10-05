@@ -188,8 +188,7 @@ export type SeedArgs = {
 }
 
 export async function seed({ payload, admin }: SeedArgs): Promise<void> {
-  // The context stops the revalidate hooks, which need a Next.js request.
-  const req = await createLocalReq({ context: { disableRevalidate: true } }, payload)
+  const req = await createLocalReq({}, payload)
 
   for (const collection of seededCollections) {
     const { totalDocs } = await payload.count({ collection, req })

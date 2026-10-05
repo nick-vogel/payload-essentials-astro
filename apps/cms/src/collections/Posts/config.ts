@@ -7,10 +7,6 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { populateAuthor } from '@/collections/Posts/hooks/populateAuthor'
 import { SEOField } from '@/fields/seo/config'
-import {
-  deletePost,
-  updatePost,
-} from '@/collections/Posts/hooks/revalidatePost'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -24,8 +20,6 @@ export const Posts: CollectionConfig = {
   },
   hooks: {
     afterRead: [populateAuthor],
-    afterChange: [updatePost],
-    afterDelete: [deletePost],
   },
   access: {
     read: () => true,
