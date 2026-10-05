@@ -1,0 +1,91 @@
+---
+import Body from '../../components/Body.astro'
+import Container from '../../components/Container.astro'
+import Header from '../../components/Header.astro'
+import PostCard from '../../components/PostCard.astro'
+import PostNavigation from '../../components/PostNavigation.astro'
+import PostPreview from '../../components/PostPreview.astro'
+import Section from '../../components/Section.astro'
+import Base from '../../layouts/Base.astro'
+import { findAdjacentPosts, findPost, findRelatedPosts } from '../../lib/cms'
+import { postMeta } from '../../lib/meta'
+import { richTextToHTML } from '../../lib/richText'
+
+const { slug } = Astro.params
+
+const post = slug ? await findPost(slug) : null
+
+if (!post) return Astro.rewrite('/404')
+
+const [html, { previous, next }, related] = await Promise.all([
+  richTextToHTML(post.body),
+  findAdjacentPosts(post),
+  findRelatedPosts(post),
+])
+---
+
+<Base {...postMeta(post)}>
+  <Section>
+    <Container>
+      <Header as="h1" align="left" id="post-title">{post.title}</Header>
+      <PostPreview post={post} variant="header" showLink={false} imageSize="fullSize" />
+    </Container>
+  </Section>
+  <Container>
+    <article class="article" aria-labelledby="post-title">
+      <Body><Fragment set:html={html} /></Body>
+    </article>
+  </Container>
+  <PostNavigation previous={previous} next={next} />
+  {
+    related.length > 0 && (
+      <Section>
+        <Container>
+          <Header>Related Posts</Header>
+          <div class="grid">
+            {related.map((relatedPost) => (
+              <PostCard post={relatedPost} variant="compact" />
+            ))}
+          </div>
+        </Container>
+      </Section>
+    )
+  }
+</Base>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-6);
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-8);
+    }
+  }
+
+  .article {
+    padding: var(--space-8) var(--space-6);
+
+    @media (min-width: 768px) {
+      padding: var(--space-8);
+    }
+
+    @media (min-width: 1024px) {
+      padding: var(--space-8) var(--space-12);
+    }
+
+    /* The box around a body upload. The global imageWrapper class inside it frames the image. */
+    :global(.upload) {
+      max-width: 640px;
+      margin: var(--space-8) auto;
+      padding: 0 var(--space-6);
+    }
+  }
+</style>

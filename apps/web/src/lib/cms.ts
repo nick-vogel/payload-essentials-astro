@@ -1,4 +1,5 @@
 import config from 'cms/config'
+import type { Post } from 'cms/types'
 import {
   getPayload,
   type CollectionSlug,
@@ -51,21 +52,23 @@ export async function findGlobal<TSlug extends GlobalSlug>(slug: TSlug, options:
   return payload.findGlobal({ ...options, slug, overrideAccess: false })
 }
 
-// A page with every media field its blocks and metadata use: the hero and TextAndImage
-// images at fullSize, the card images at card, and the featured image at og.
+// The media fields every populate needs, before its own sizes.
 // Payload builds the original's url from its filename, and mediaFile falls back to the
 // original for an image too small for the size, so the filename has to come along.
+const mediaFields = {
+  filename: true,
+  url: true,
+  width: true,
+  height: true,
+  alt: true,
+} satisfies Select<'media'>
+
+// A page with every media field its blocks and metadata use: the hero and TextAndImage
+// images at fullSize, the card images at card, and the featured image at og.
 export function findPage(slug: string) {
   return findBySlug('pages', slug, {
     populate: {
-      media: {
-        filename: true,
-        url: true,
-        width: true,
-        height: true,
-        alt: true,
-        sizes: { fullSize: true, card: true, og: true },
-      },
+      media: { ...mediaFields, sizes: { fullSize: true, card: true, og: true } },
     },
   })
 }
@@ -94,14 +97,7 @@ export function findPostPreviews(
     ...options,
     select: postPreviewSelect,
     populate: {
-      media: {
-        filename: true,
-        url: true,
-        width: true,
-        height: true,
-        alt: true,
-        sizes: { fullSize: true, card: true },
-      },
+      media: { ...mediaFields, sizes: { fullSize: true, card: true } },
       categories: { name: true, slug: true },
     },
   })
@@ -123,3 +119,66 @@ export async function findFilterCategories() {
 }
 
 export type FilterCategory = Awaited<ReturnType<typeof findFilterCategories>>[number]
+
+// A post with every media field its page uses: the featured image at fullSize for the header and
+// og for the metadata, and the body's uploads and block images at fullSize and card. The category
+// comes along for the header's name.
+export function findPost(slug: string) {
+  return findBySlug('posts', slug, {
+    populate: {
+      media: { ...mediaFields, sizes: { fullSize: true, card: true, og: true } },
+      categories: { name: true, slug: true },
+    },
+  })
+}
+
+type PostPosition = Pick<Post, 'slug' | 'date' | 'createdAt'>
+
+// The comparison that finds the posts on each side of this one, and the sort that puts the nearest first.
+const adjacentOrder = {
+  previous: { compare: 'less_than', sort: ['-date', '-createdAt'] },
+  next: { compare: 'greater_than', sort: ['date', 'createdAt'] },
+} satisfies Record<string, { compare: 'less_than' | 'greater_than'; sort: string[] }>
+
+// The post just before and just after this one by date. Posts that share a date fall back to
+// the order they were created in, as in the Next.js site.
+// A post with no date has no place in that order, so it has neither.
+export async function findAdjacentPosts({ slug, date, createdAt }: PostPosition) {
+  if (!date) return { previous: null, next: null }
+
+  const adjacent = async (direction: keyof typeof adjacentOrder) => {
+    const { compare, sort } = adjacentOrder[direction]
+    const { docs } = await find('posts', {
+      where: {
+        slug: { not_equals: slug },
+        or: [
+          { date: { [compare]: date } },
+          { and: [{ date: { equals: date } }, { createdAt: { [compare]: createdAt } }] },
+        ],
+      },
+      sort,
+      select: { slug: true, title: true },
+      limit: 1,
+      pagination: false,
+    })
+    return docs[0] ?? null
+  }
+
+  const [previous, next] = await Promise.all([adjacent('previous'), adjacent('next')])
+  return { previous, next }
+}
+
+// Up to four other posts in the same category, newest first.
+export async function findRelatedPosts({ slug, category }: Pick<Post, 'slug' | 'category'>) {
+  if (!category) return []
+  const { docs } = await findPostPreviews({
+    where: {
+      slug: { not_equals: slug },
+      category: { equals: typeof category === 'object' ? category.id : category },
+    },
+    sort: '-date',
+    limit: 4,
+    pagination: false,
+  })
+  return docs
+}

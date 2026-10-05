@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { headMeta, imageURLs } from './helpers'
+import { gtmScripts, headMeta, imageURLs } from './helpers'
 
 // Every expected value below comes from the seed in apps/cms/src/seed.
 test.describe('home page', () => {
@@ -116,13 +116,9 @@ test.describe('home page', () => {
     expect(await meta('name', 'twitter:description')).toBe(description)
     expect(await meta('name', 'twitter:image')).toBe(ogImage)
 
-    // Playwright's text filters skip script contents, so this reads them from the DOM.
-    const gtmScripts = await head
-      .locator('script')
-      .evaluateAll((scripts) =>
-        scripts.map((script) => script.textContent ?? '').filter((text) => text.includes('googletagmanager.com/gtm.js')),
-      )
-    expect(gtmScripts).toHaveLength(1)
-    expect(gtmScripts[0]).toContain('GTM-XXXXXXX')
+    // The GTM container ID is the site settings' seeded gtmCode.
+    const gtm = await gtmScripts(page)
+    expect(gtm).toHaveLength(1)
+    expect(gtm[0]).toContain('GTM-XXXXXXX')
   })
 })
