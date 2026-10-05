@@ -6,6 +6,7 @@ import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { migrations } from '@/migrations'
 import { seed } from '@/seed'
+import { getServerSideURL } from '@/utilities/getUrl'
 
 // The seed needs an empty database, so this file runs on a throwaway one.
 // The postgres adapter creates it on connect, and afterAll drops it.
@@ -70,6 +71,16 @@ describe('seed', () => {
     expect(docs.map((page) => page.slug)).toEqual(expect.arrayContaining(['home', 'blog']))
   })
 
+  it('writes each canonical URL at the path the web app serves', async () => {
+    const base = getServerSideURL()
+    const pages = await payload.find({ collection: 'pages', limit: 0, depth: 0 })
+    const posts = await payload.find({ collection: 'posts', limit: 0, depth: 0 })
+    for (const page of pages.docs) {
+      expect(page.meta?.canonicalUrl).toBe(page.slug === 'home' ? `${base}/` : `${base}/${page.slug}`)
+    }
+    for (const post of posts.docs) expect(post.meta?.canonicalUrl).toBe(`${base}/blog/${post.slug}`)
+  })
+
   it('features exactly one post and gives every post its own date', async () => {
     const { docs } = await payload.find({ collection: 'posts', limit: 0, depth: 0 })
     expect(docs.filter((post) => post.featured)).toHaveLength(1)
@@ -129,6 +140,34 @@ describe('seed', () => {
     await expect(
       payload.updateGlobal({ slug: 'nav', data: { navItems }, depth: 0, req }),
     ).resolves.toMatchObject({ navItems })
+  })
+
+  // The admin form sends the stored canonical URL back unchanged with a new slug.
+  it('moves a generated canonical URL with its slug and leaves a custom one alone', async () => {
+    const req = await createLocalReq({}, payload)
+    const base = getServerSideURL()
+    const [{ id: _id, createdAt: _createdAt, updatedAt: _updatedAt, slug: _slug, meta: _meta, ...post }] = (
+      await payload.find({ collection: 'posts', limit: 1, depth: 0, req })
+    ).docs
+    const create = (newSlug: string, canonicalUrl?: string) =>
+      payload.create({
+        collection: 'posts',
+        data: { ...post, featured: false, date: new Date().toISOString(), slug: newSlug, meta: { canonicalUrl } },
+        depth: 0,
+        req,
+      })
+    const rename = (doc: { id: string; meta?: { canonicalUrl?: string | null } }, newSlug: string) =>
+      payload.update({ collection: 'posts', id: doc.id, data: { slug: newSlug, meta: doc.meta }, depth: 0, req })
+
+    const generated = await create('canonical-generated')
+    const custom = await create('canonical-custom', 'https://example.com/elsewhere')
+    try {
+      expect(generated.meta?.canonicalUrl).toBe(`${base}/blog/canonical-generated`)
+      expect((await rename(generated, 'canonical-renamed')).meta?.canonicalUrl).toBe(`${base}/blog/canonical-renamed`)
+      expect((await rename(custom, 'canonical-custom-renamed')).meta?.canonicalUrl).toBe('https://example.com/elsewhere')
+    } finally {
+      await payload.delete({ collection: 'posts', where: { id: { in: [generated.id, custom.id] } }, req })
+    }
   })
 
   it('refuses to run on a database that already has content', async () => {

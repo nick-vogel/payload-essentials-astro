@@ -1,5 +1,5 @@
 import type { FieldHook } from 'payload'
-import { getServerSideURL } from '@/utilities/getUrl'
+import { getDocPath, getServerSideURL } from '@/utilities/getUrl'
 
 export const generateCanonical: FieldHook = ({
   data,
@@ -8,21 +8,18 @@ export const generateCanonical: FieldHook = ({
   collection,
   originalDoc,
 }) => {
-  const isHome = data?.slug === 'home'
   const url = getServerSideURL()
-  const collectionSlug = collection?.slug !== 'pages' ? `/${collection.slug}` : ''
-  const path = isHome ? '/' : `${collectionSlug}/${data.slug}`
-  const defaultUrl = `${url}${path}`
+  const defaultUrl = `${url}${getDocPath(collection?.slug, data?.slug)}`
   if (!value) {
     return defaultUrl
   }
   if (previousValue !== value) {
     return value
   }
+  // A generated URL follows a slug change. A custom one stays.
   if (originalDoc?.slug !== data?.slug) {
-    const previousPath = isHome ? '/' : `${collectionSlug}/${originalDoc?.slug}`
-    const previousURL = `${url}${previousPath}`
-    if (value !== previousURL) {
+    const previousURL = `${url}${getDocPath(collection?.slug, originalDoc?.slug)}`
+    if (value === previousURL) {
       return defaultUrl
     }
   }
