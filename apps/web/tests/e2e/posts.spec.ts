@@ -44,11 +44,50 @@ test.describe('posts at /blog/<slug>', () => {
     await page.goto(`/blog/${slug}`)
     const article = body(page, title)
 
-    // An even post holds the meadow.
-    await expect(article.getByRole('img', { name: 'Tall grass in a meadow, backlit by a low golden sun' })).toBeVisible()
+    // An even post holds the meadow. The upload comes before the blocks, whose Pages card holds it too.
+    await expect(
+      article.getByRole('img', { name: 'Tall grass in a meadow, backlit by a low golden sun' }).first(),
+    ).toBeVisible()
     await expect(article.getByRole('link', { name: 'about the course' })).toHaveAttribute('href', '/about')
     await expect(article.getByRole('link', { name: 'ask us a question' })).toHaveAttribute('href', '/contact')
     await expect(article).not.toContainText('unknown node')
+  })
+
+  test('renders the TextAndImage and Cards blocks in the body', async ({ page, request }) => {
+    const { slug, title } = posts[0]
+    await page.goto(`/blog/${slug}`)
+    const article = body(page, title)
+
+    const textAndImage = article.locator('section', { has: page.getByRole('heading', { name: 'Collections at a glance' }) })
+    await expect(textAndImage).toContainText('A collection is a set of documents that share the same fields.')
+    await expect(textAndImage.getByRole('img', { name: /^A wooden desk/ })).toBeVisible()
+    await expect(textAndImage.locator('[data-layout]')).toHaveAttribute('data-layout', 'left')
+    await expect(textAndImage).toHaveAttribute('data-background', 'primary')
+
+    const cardsSection = article.locator('section', { has: page.getByRole('heading', { name: 'Collections in this site' }) })
+    await expect(cardsSection).toHaveAttribute('data-background', 'secondary')
+    const cards = cardsSection.getByRole('article')
+    await expect(cards).toHaveCount(3)
+    for (const [index, { title, body, alt }] of [
+      { title: 'Pages', body: 'Built from blocks.', alt: 'Tall grass in a meadow, backlit by a low golden sun' },
+      { title: 'Posts', body: 'Written in rich text.', alt: /^A wooden desk/ },
+      { title: 'Media', body: 'Uploaded once, used everywhere.', alt: 'A forested mountain ridge wrapped in low cloud' },
+    ].entries()) {
+      const card = cards.nth(index)
+      await expect(card.getByRole('heading', { level: 3, name: title })).toBeVisible()
+      await expect(card).toContainText(body)
+      await expect(card.getByRole('img', { name: alt })).toBeVisible()
+    }
+
+    // The four block images, each with a srcset candidate or more.
+    for (const section of [textAndImage, cardsSection]) {
+      const urls = await imageURLs(page, section)
+      expect(urls.length).toBeGreaterThan(0)
+      for (const url of urls) {
+        const response = await request.get(url)
+        expect(response.status(), url).toBe(200)
+      }
+    }
   })
 
   test('renders the mountain upload in an odd post', async ({ page }) => {
