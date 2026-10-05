@@ -1,7 +1,9 @@
 ---
 import type { Page } from 'cms/types'
+import Cards from './Cards.astro'
 import Hero from './Hero.astro'
 import Text from './Text.astro'
+import TextAndImage from './TextAndImage.astro'
 
 type Props = { blocks: Page['blocks'] }
 
@@ -15,9 +17,10 @@ const { blocks } = Astro.props
         return <Hero {...block} />
       case 'text':
         return <Text {...block} />
-      // The TextAndImage and Cards blocks render nothing until the next ticket ports them.
-      default:
-        return null
+      case 'textAndImage':
+        return <TextAndImage {...block} />
+      case 'cards':
+        return <Cards {...block} />
     }
   })
 }

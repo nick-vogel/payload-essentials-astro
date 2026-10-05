@@ -1,0 +1,62 @@
+---
+import { Image } from 'astro:assets'
+import type { Media } from 'cms/types'
+import { mediaFile } from '../lib/media'
+
+type Props = {
+  image: Media | string | null | undefined
+  size?: keyof NonNullable<Media['sizes']>
+  // Grow to fill a flex row, beside the text of a TextAndImage block.
+  flex?: boolean
+  class?: string
+}
+
+// The class carries the parent's scope attribute, so the parent can style the wrapper.
+const { image, size, flex, class: className } = Astro.props
+const file = mediaFile(image, size)
+---
+
+{
+  file && (
+    <div class:list={['imageWrapper', { flex }, className]}>
+      <Image src={file.url} alt={file.alt} width={file.width} height={file.height} />
+    </div>
+  )
+}
+
+<style>
+  .imageWrapper {
+    position: relative;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    margin-bottom: var(--space-4);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: filter var(--transition-medium);
+      @media (prefers-color-scheme: dark) {
+        filter: brightness(0.85) contrast(0.9);
+      }
+    }
+
+    @media (min-width: 768px) {
+      &:hover img {
+        filter: brightness(0.98) contrast(1);
+
+        @media (prefers-color-scheme: dark) {
+          filter: brightness(0.9) contrast(0.95);
+        }
+      }
+    }
+  }
+
+  .flex {
+    flex: 1;
+  }
+</style>
