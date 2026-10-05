@@ -69,3 +69,42 @@ export function findPage(slug: string) {
     },
   })
 }
+
+// The fields a post preview card shows. The populatedAuthor hook reads author to fill in the
+// author's name, so author has to come along too.
+const postPreviewSelect = {
+  slug: true,
+  title: true,
+  summary: true,
+  date: true,
+  date_tz: true,
+  author: true,
+  populatedAuthor: true,
+  category: true,
+  featuredImage: true,
+} satisfies Select<'posts'>
+
+// Posts with what a post preview card shows: the featured image at fullSize and card, and the
+// category name. The blog list and the related posts both call this, with their own where, sort,
+// page and limit.
+export function findPostPreviews(
+  options: Omit<FindArgs<'posts', typeof postPreviewSelect>, 'select' | 'populate'> = {},
+) {
+  return find('posts', {
+    ...options,
+    select: postPreviewSelect,
+    populate: {
+      media: {
+        filename: true,
+        url: true,
+        width: true,
+        height: true,
+        alt: true,
+        sizes: { fullSize: true, card: true },
+      },
+      categories: { name: true, slug: true },
+    },
+  })
+}
+
+export type PostPreviewData = Awaited<ReturnType<typeof findPostPreviews>>['docs'][number]

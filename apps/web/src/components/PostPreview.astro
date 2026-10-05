@@ -1,0 +1,124 @@
+---
+import type { Media } from 'cms/types'
+import type { PostPreviewData } from '../lib/cms'
+import { postHref } from '../lib/links'
+import Header from './Header.astro'
+import MediaImage from './MediaImage.astro'
+
+type Props = {
+  post: PostPreviewData
+  // featured shows the title as a heading. header leaves it to the post page's own h1.
+  variant?: 'featured' | 'header'
+  showLink?: boolean
+  imageSize?: keyof NonNullable<Media['sizes']>
+  class?: string
+}
+
+const { post, variant = 'featured', showLink = true, imageSize = 'fullSize', class: className } = Astro.props
+const { slug, title, summary, featuredImage, populatedAuthor: author, category, date, date_tz } = post
+const categoryName = category && typeof category === 'object' ? category.name : null
+const formattedDate = date
+  ? new Date(date).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: date_tz ?? undefined,
+    })
+  : null
+const Wrapper = showLink ? 'a' : 'div'
+---
+
+<Wrapper class:list={['preview', className]} href={showLink ? postHref(slug) : undefined}>
+  <MediaImage image={featuredImage} size={imageSize} />
+  <div class="content">
+    {variant === 'featured' && <Header as="h3" align="left">{title}</Header>}
+    <div class="meta">
+      {
+        author?.name && (
+          <span class="iconContainer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="5" />
+              <path d="M20 21a8 8 0 0 0-16 0" />
+            </svg>
+            {author.name}
+          </span>
+        )
+      }
+      {
+        categoryName && (
+          <span class="iconContainer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
+              <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
+            </svg>
+            {categoryName}
+          </span>
+        )
+      }
+      {
+        date && formattedDate && (
+          <span class="iconContainer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 2v4" />
+              <path d="M16 2v4" />
+              <rect width="18" height="18" x="3" y="4" rx="2" />
+              <path d="M3 10h18" />
+            </svg>
+            <time datetime={date}>{formattedDate}</time>
+          </span>
+        )
+      }
+    </div>
+    {summary && <p class="summary">{summary}</p>}
+  </div>
+</Wrapper>
+
+<style>
+  .preview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+    color: inherit;
+    text-decoration: none;
+
+    :global(img) {
+      transition: transform var(--transition-medium), filter var(--transition-medium);
+    }
+
+    @media (min-width: 768px) {
+      &:hover :global(img) {
+        transform: scale(1.02);
+      }
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    font-size: 0.875rem;
+    color: light-dark(var(--dark-gray), var(--light-gray));
+    margin-bottom: var(--space-2);
+  }
+
+  .summary {
+    color: light-dark(var(--dark-gray), var(--light-gray));
+    margin-top: var(--space-4);
+  }
+
+  .iconContainer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+</style>
