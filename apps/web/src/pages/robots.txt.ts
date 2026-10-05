@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro'
+import { siteOrigin } from '../lib/links'
+import { linesResponse } from '../lib/response'
 
-// Without SITE_URL, the sitemap URL falls back to the request's own origin, as the layout does.
-export const GET = (({ site, url }) => {
-  const sitemap = new URL('/sitemap.xml', site ?? url.origin)
-  const body = ['User-agent: *', 'Allow: /', '', `Sitemap: ${sitemap.href}`, ''].join('\n')
+export const GET = ((context) => {
+  const sitemap = new URL('/sitemap.xml', siteOrigin(context))
 
-  return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
+  return linesResponse(['User-agent: *', 'Allow: /', '', `Sitemap: ${sitemap.href}`], 'text/plain; charset=utf-8')
 }) satisfies APIRoute

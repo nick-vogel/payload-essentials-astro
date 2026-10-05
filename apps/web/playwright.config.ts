@@ -22,6 +22,11 @@ const database = new URL(process.env.DATABASE_URL)
 database.pathname = `${database.pathname}-e2e`
 const mediaDir = path.join(os.tmpdir(), `${path.basename(database.pathname)}-media`)
 
+// The admin the seed creates, so a test can log in to the CMS REST API. Without a password the seed
+// generates a random one. A fixed one is fine on a database every run throws away.
+process.env.SEED_ADMIN_EMAIL ||= 'admin@example.com'
+process.env.SEED_ADMIN_PASSWORD ||= 'e2e-admin-password'
+
 const cmsPort = Number(process.env.E2E_CMS_PORT || 3100)
 const webPort = Number(process.env.E2E_WEB_PORT || 4400)
 const cmsURL = `http://127.0.0.1:${cmsPort}`

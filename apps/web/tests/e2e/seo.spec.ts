@@ -49,6 +49,47 @@ test.describe('sitemap.xml and robots.txt', () => {
     }
   })
 
+  test('sitemap.xml leaves out a page whose editor unticked Add to sitemap', async ({ request, baseURL }) => {
+    // Mirrors playwright.config.ts, which also sets the seeded admin's credentials in process.env.
+    const cmsURL = `http://127.0.0.1:${process.env.E2E_CMS_PORT || 3100}`
+    const login = await request.post(`${cmsURL}/api/users/login`, {
+      data: { email: process.env.SEED_ADMIN_EMAIL, password: process.env.SEED_ADMIN_PASSWORD },
+    })
+    expect(login.ok()).toBe(true)
+    const headers = { Authorization: `JWT ${(await login.json()).token}` }
+
+    const media = await request.get(`${cmsURL}/api/media?limit=1&depth=0`)
+    const featuredImage = (await media.json()).docs[0].id
+
+    // A control page left in the sitemap proves a page created here does reach it.
+    const created: string[] = []
+    const createPage = async (slug: string, addToSitemap: boolean) => {
+      const response = await request.post(`${cmsURL}/api/pages`, {
+        headers,
+        data: { title: slug, slug, featuredImage, meta: { addToSitemap } },
+      })
+      expect(response.status()).toBe(201)
+      created.push((await response.json()).doc.id)
+    }
+
+    try {
+      await createPage('sitemap-kept', true)
+      await createPage('sitemap-opted-out', false)
+
+      // Still a published page anyone can read, only kept out of the sitemap.
+      const optedOut = await request.get(`${cmsURL}/api/pages?where[slug][equals]=sitemap-opted-out&depth=0`)
+      expect((await optedOut.json()).docs).toHaveLength(1)
+
+      const xml = await (await request.get('/sitemap.xml')).text()
+      expect(xml).toContain(`<loc>${baseURL}/sitemap-kept</loc>`)
+      expect(xml).not.toContain(`<loc>${baseURL}/sitemap-opted-out</loc>`)
+    } finally {
+      for (const id of created) {
+        await request.delete(`${cmsURL}/api/pages/${id}`, { headers })
+      }
+    }
+  })
+
   test('robots.txt allows crawlers and points at the sitemap', async ({ request, baseURL }) => {
     const response = await request.get('/robots.txt')
     expect(response.status()).toBe(200)
