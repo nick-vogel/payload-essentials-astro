@@ -1,0 +1,14 @@
+---
+import type { Page } from 'cms/types'
+import Blocks from '../blocks/Blocks.astro'
+import { docMeta } from '../lib/meta'
+import Base from './Base.astro'
+
+type Props = { page: Page }
+
+const { page } = Astro.props
+---
+
+<Base {...docMeta(page)}>
+  <Blocks blocks={page.blocks} />
+</Base>

@@ -6,19 +6,17 @@ import { mediaFile } from '../lib/media'
 type Props = {
   image: Media | string | null | undefined
   size?: keyof NonNullable<Media['sizes']>
-  // Grow to fill a flex row, beside the text of a TextAndImage block.
-  flex?: boolean
   class?: string
 }
 
-// The class carries the parent's scope attribute, so the parent can style the wrapper.
-const { image, size, flex, class: className } = Astro.props
+// The rest carries the parent's scope attribute, so the parent can style the wrapper by its class.
+const { image, size, class: className, ...rest } = Astro.props
 const file = mediaFile(image, size)
 ---
 
 {
   file && (
-    <div class:list={['imageWrapper', { flex }, className]}>
+    <div class:list={['imageWrapper', className]} {...rest}>
       <Image src={file.url} alt={file.alt} width={file.width} height={file.height} />
     </div>
   )
@@ -54,9 +52,5 @@ const file = mediaFile(image, size)
         }
       }
     }
-  }
-
-  .flex {
-    flex: 1;
   }
 </style>

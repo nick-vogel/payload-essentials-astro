@@ -24,7 +24,7 @@ const cards = await Promise.all(
         <div class="grid" data-cards={cards.length}>
           {cards.map((card) => (
             <article class="card">
-              <MediaImage image={card.image} size="card" />
+              <MediaImage image={card.image} size="card" class="image" />
               <div class="content">
                 <Header as="h3" class="title" align="left">
                   {card.title}
@@ -72,8 +72,8 @@ const cards = await Promise.all(
     display: flex;
     flex-direction: column;
 
-    /* The image wrapper comes from MediaImage, so its scope differs from this one. */
-    &:hover > :global(*) {
+    &:hover > .image,
+    &:hover > .content {
       @media (min-width: 768px) {
         transform: translateY(-4px);
         box-shadow: var(--shadow-lg);

@@ -1,17 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
 
-// Every expected value below comes from the seed in apps/cms/src/seed.
+import { headMeta, imageURLs } from './helpers'
 
-// The absolute URL of every image and srcset candidate on the page.
-function imageURLs(page: Page) {
-  return page.evaluate(() => {
-    const candidates = [...document.querySelectorAll('img, source')].flatMap((element) => [
-      element.getAttribute('src'),
-      ...(element.getAttribute('srcset') ?? '').split(',').map((entry) => entry.trim().split(/\s+/)[0]),
-    ])
-    return [...new Set(candidates.filter(Boolean).map((url) => new URL(url!, location.href).href))]
-  })
-}
+// Every expected value below comes from the seed in apps/cms/src/seed.
 
 // The block section that holds the given heading.
 function block(page: Page, heading: string) {
@@ -34,6 +25,7 @@ test.describe('pages at their slug', () => {
       'Each lesson adds one feature to this site, so you always have something that works.',
     )
     await expect(textAndImage.getByRole('img', { name: 'A forested mountain ridge wrapped in low cloud' })).toBeVisible()
+    await expect(textAndImage.locator('[data-layout]')).toHaveAttribute('data-layout', 'left')
   })
 
   test('the contact page shows its Hero and Text blocks', async ({ page }) => {
@@ -54,22 +46,30 @@ test.describe('pages at their slug', () => {
     const textAndImage = block(page, 'Everything in one admin panel')
     await expect(textAndImage).toContainText('Pages, posts, media and settings all live in one place')
     await expect(textAndImage.getByRole('img', { name: /^A wooden desk/ })).toBeVisible()
+    await expect(textAndImage.locator('[data-layout]')).toHaveAttribute('data-layout', 'right')
 
     const cards = block(page, 'What you will learn').getByRole('article')
     await expect(cards).toHaveCount(3)
-    for (const [index, [title, body, alt]] of [
-      ['Content modeling', 'Collections, fields and blocks.', /^A wooden desk/],
-      ['Access control', 'Who can read and change what.', 'A forested mountain ridge wrapped in low cloud'],
-      ['Deployment', 'Ship the site and keep it running.', 'Tall grass in a meadow, backlit by a low golden sun'],
+    for (const [index, { title, body, alt }] of [
+      { title: 'Content modeling', body: 'Collections, fields and blocks.', alt: /^A wooden desk/ },
+      { title: 'Access control', body: 'Who can read and change what.', alt: 'A forested mountain ridge wrapped in low cloud' },
+      { title: 'Deployment', body: 'Ship the site and keep it running.', alt: 'Tall grass in a meadow, backlit by a low golden sun' },
     ].entries()) {
       const card = cards.nth(index)
-      await expect(card.getByRole('heading', { level: 3, name: title as string })).toBeVisible()
-      await expect(card).toContainText(body as string)
+      await expect(card.getByRole('heading', { level: 3, name: title })).toBeVisible()
+      await expect(card).toContainText(body)
       await expect(card.getByRole('img', { name: alt })).toBeVisible()
     }
   })
 
-  for (const path of ['/about', '/contact', '/']) {
+  // The blog page has no blocks yet, and renders here until the blog index route takes it over.
+  test('the blog page renders with its own title', async ({ page }) => {
+    const response = await page.goto('/blog')
+    expect(response?.status()).toBe(200)
+    await expect(page).toHaveTitle('Blog | Payload Essentials')
+  })
+
+  for (const path of ['/about', '/contact', '/blog', '/']) {
     test(`serves every image URL on ${path}`, async ({ page, request }) => {
       await page.goto(path)
 
@@ -107,8 +107,7 @@ test.describe('pages at their slug', () => {
   }) => {
     await page.goto('/about')
     const head = page.locator('head')
-    const meta = (attribute: 'name' | 'property', key: string) =>
-      head.locator(`meta[${attribute}="${key}"]`).getAttribute('content')
+    const meta = headMeta(page)
 
     const title = 'About'
     // The about page has no description of its own, so the Settings default fills it.

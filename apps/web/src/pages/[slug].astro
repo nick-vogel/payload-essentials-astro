@@ -1,9 +1,7 @@
 ---
-import Blocks from '../blocks/Blocks.astro'
-import Base from '../layouts/Base.astro'
+import PageView from '../layouts/PageView.astro'
+import { findPage } from '../lib/cms'
 import { HOME_SLUG } from '../lib/links'
-import { docMeta } from '../lib/meta'
-import { findPage } from '../lib/pages'
 
 const { slug } = Astro.params
 
@@ -15,6 +13,4 @@ const page = slug ? await findPage(slug) : null
 if (!page) return Astro.rewrite('/404')
 ---
 
-<Base {...docMeta(page)}>
-  <Blocks blocks={page.blocks} />
-</Base>
+<PageView page={page} />
