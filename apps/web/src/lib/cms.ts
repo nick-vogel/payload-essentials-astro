@@ -121,3 +121,5 @@ export async function findFilterCategories() {
   })
   return docs.filter((category) => category.relatedPosts?.docs?.length)
 }
+
+export type FilterCategory = Awaited<ReturnType<typeof findFilterCategories>>[number]

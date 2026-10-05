@@ -1,8 +1,9 @@
 ---
+import type { FilterCategory } from '../lib/cms'
 import { blogHref } from '../lib/links'
 
 type Props = {
-  categories: { id: string; name?: string | null; slug?: string | null }[]
+  categories: FilterCategory[]
   currentCategory?: string | null
 }
 
@@ -25,14 +26,16 @@ const { categories, currentCategory } = Astro.props
   <button type="submit" class="button">Filter</button>
 </form>
 
-<script>
-  import { blogHref } from '../lib/links'
-
-  for (const form of document.querySelectorAll<HTMLFormElement>('[data-category-filter]')) {
-    const select = form.querySelector('select')!
-    form.querySelector('button')!.hidden = true
-    // Leaves the param out for every category, as the server-rendered links do.
-    select.addEventListener('change', () => location.assign(blogHref({ category: select.value })))
+<script is:inline>
+  // Inline, so it is not bundled and imports nothing. "All categories" goes to the bare action, so the
+  // URL is /blog rather than /blog?category=.
+  for (const form of document.querySelectorAll('[data-category-filter]')) {
+    const select = form.querySelector('select')
+    form.querySelector('button').hidden = true
+    select.addEventListener('change', () => {
+      if (select.value) form.requestSubmit()
+      else location.assign(form.action)
+    })
   }
 </script>
 

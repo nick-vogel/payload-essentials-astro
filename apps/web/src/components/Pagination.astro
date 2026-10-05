@@ -7,50 +7,36 @@ type Props = {
 }
 
 const { currentPage, totalPages, href } = Astro.props
-const pages = Array.from({ length: totalPages }, (_, index) => index + 1)
-const hasPrev = currentPage > 1
-const hasNext = currentPage < totalPages
+
+// Previous and Next render like the numbers. A page outside the list leaves its item disabled.
+const items: { text: string; page: number; label?: string; arrow?: boolean }[] = [
+  { text: 'Previous', page: currentPage - 1, label: 'Previous page', arrow: true },
+  ...Array.from({ length: totalPages }, (_, index) => ({ text: String(index + 1), page: index + 1 })),
+  { text: 'Next', page: currentPage + 1, label: 'Next page', arrow: true },
+]
 ---
 
 {
   totalPages > 1 && (
     <nav aria-label="Pagination" class="pagination">
       <ol class="list">
-        <li>
-          {hasPrev ? (
-            <a href={href(currentPage - 1)} class="link arrow" aria-label="Previous page">
-              Previous
-            </a>
-          ) : (
-            <span class="link arrow disabled" aria-disabled="true">
-              Previous
-            </span>
-          )}
-        </li>
-        {pages.map((page) => (
+        {items.map(({ text, page, label, arrow }) => (
           <li>
             {page === currentPage ? (
               <span class="link active" aria-current="page">
-                {page}
+                {text}
+              </span>
+            ) : page < 1 || page > totalPages ? (
+              <span class:list={['link', { arrow }, 'disabled']} aria-disabled="true">
+                {text}
               </span>
             ) : (
-              <a href={href(page)} class="link">
-                {page}
+              <a href={href(page)} class:list={['link', { arrow }]} aria-label={label}>
+                {text}
               </a>
             )}
           </li>
         ))}
-        <li>
-          {hasNext ? (
-            <a href={href(currentPage + 1)} class="link arrow" aria-label="Next page">
-              Next
-            </a>
-          ) : (
-            <span class="link arrow disabled" aria-disabled="true">
-              Next
-            </span>
-          )}
-        </li>
       </ol>
     </nav>
   )

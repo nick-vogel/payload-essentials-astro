@@ -1,13 +1,8 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
-import { headMeta, imageURLs } from './helpers'
+import { headMeta, imageURLs, sectionByHeading } from './helpers'
 
 // Every expected value below comes from the seed in apps/cms/src/seed.
-
-// The block section that holds the given heading.
-function block(page: Page, heading: string) {
-  return page.getByRole('main').locator('section', { has: page.getByRole('heading', { name: heading, exact: true }) })
-}
 
 test.describe('pages at their slug', () => {
   test('the about page shows its Hero, Text and TextAndImage blocks', async ({ page }) => {
@@ -16,11 +11,11 @@ test.describe('pages at their slug', () => {
 
     const main = page.getByRole('main')
     await expect(main.getByRole('heading', { level: 1, name: 'About the course' })).toBeVisible()
-    await expect(block(page, 'Why Payload Essentials')).toContainText(
+    await expect(sectionByHeading(page, 'Why Payload Essentials')).toContainText(
       'Payload Essentials teaches you to build a content managed site from an empty folder to a live deployment.',
     )
 
-    const textAndImage = block(page, 'Learn by building')
+    const textAndImage = sectionByHeading(page, 'Learn by building')
     await expect(textAndImage).toContainText(
       'Each lesson adds one feature to this site, so you always have something that works.',
     )
@@ -43,12 +38,12 @@ test.describe('pages at their slug', () => {
   test('the home page shows its TextAndImage and Cards blocks', async ({ page }) => {
     await page.goto('/')
 
-    const textAndImage = block(page, 'Everything in one admin panel')
+    const textAndImage = sectionByHeading(page, 'Everything in one admin panel')
     await expect(textAndImage).toContainText('Pages, posts, media and settings all live in one place')
     await expect(textAndImage.getByRole('img', { name: /^A wooden desk/ })).toBeVisible()
     await expect(textAndImage.locator('[data-layout]')).toHaveAttribute('data-layout', 'right')
 
-    const cards = block(page, 'What you will learn').getByRole('article')
+    const cards = sectionByHeading(page, 'What you will learn').getByRole('article')
     await expect(cards).toHaveCount(3)
     for (const [index, { title, body, alt }] of [
       { title: 'Content modeling', body: 'Collections, fields and blocks.', alt: /^A wooden desk/ },

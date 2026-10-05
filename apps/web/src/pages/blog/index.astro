@@ -1,10 +1,9 @@
 ---
-import Card from '../../components/Card.astro'
-import CardContainer from '../../components/CardContainer.astro'
 import CategoryFilter from '../../components/CategoryFilter.astro'
 import Container from '../../components/Container.astro'
 import Header from '../../components/Header.astro'
 import Pagination from '../../components/Pagination.astro'
+import PostCard from '../../components/PostCard.astro'
 import PostPreview from '../../components/PostPreview.astro'
 import Section from '../../components/Section.astro'
 import Base from '../../layouts/Base.astro'
@@ -15,46 +14,55 @@ import { docMeta } from '../../lib/meta'
 const POSTS_PER_PAGE = 8
 
 const pageParam = Astro.url.searchParams.get('page')
-const category = Astro.url.searchParams.get('category') || null
+const category = Astro.url.searchParams.get('category')
 
 // Page 1 has no param. Anything but a whole number from 1 up is not a page of the list.
 if (pageParam !== null && !/^[1-9]\d*$/.test(pageParam)) return Astro.rewrite('/404')
 const currentPage = pageParam ? Number(pageParam) : 1
 
-// The grid never shows the featured post, which sits above it on every page and every category.
-const [page, featuredPosts, categories, posts] = await Promise.all([
+// Without JavaScript, the filter form submits "All categories" as an empty param. A 302 rather than a
+// 301, because browsers keep a 301 for good and this is a form submission, not a page that moved.
+if (category === '') return Astro.redirect(blogHref({ page: currentPage }), 302)
+
+const [blogPage, categories, featuredPosts] = await Promise.all([
   findPage('blog'),
-  findPostPreviews({ where: { featured: { equals: true } }, limit: 1, pagination: false }),
   findFilterCategories(),
-  findPostPreviews({
-    where: {
-      and: [{ featured: { not_equals: true } }, ...(category ? [{ 'category.slug': { equals: category } }] : [])],
-    },
-    sort: '-date',
-    page: currentPage,
-    limit: POSTS_PER_PAGE,
-  }),
+  findPostPreviews({ where: { featured: { equals: true } }, limit: 1, pagination: false }),
 ])
 
-if (!page) return Astro.rewrite('/404')
-if (currentPage > 1 && currentPage > posts.totalPages) return Astro.rewrite('/404')
+if (!blogPage) return Astro.rewrite('/404')
 
 // With no featured post, the latest post takes its place, as in the Next.js blog page.
-const featured =
-  featuredPosts.docs[0] ?? (await findPostPreviews({ sort: '-date', limit: 1, pagination: false })).docs[0]
+const featured = featuredPosts.docs[0]
+const shown = featured ?? (await findPostPreviews({ sort: '-date', limit: 1, pagination: false })).docs[0]
+
+// The post above the grid stays there on every page and every category, and the grid never shows it.
+const posts = await findPostPreviews({
+  where: {
+    and: [
+      ...(shown ? [{ id: { not_equals: shown.id } }] : []),
+      ...(category ? [{ 'category.slug': { equals: category } }] : []),
+    ],
+  },
+  sort: '-date',
+  page: currentPage,
+  limit: POSTS_PER_PAGE,
+})
+
+if (currentPage > 1 && currentPage > posts.totalPages) return Astro.rewrite('/404')
 ---
 
-<Base {...docMeta(page)}>
+<Base {...docMeta(blogPage)}>
   <Section>
     <Container>
-      <Header as="h1" align="left" class="pageTitle">{page.title}</Header>
+      <Header as="h1" align="left" class="pageTitle">{blogPage.title}</Header>
       {
-        featured && (
+        shown && (
           <>
             <Header align="left" class="featuredTitle">
-              {featuredPosts.docs[0] ? 'Featured post' : 'Latest post'}
+              {featured ? 'Featured post' : 'Latest post'}
             </Header>
-            <PostPreview post={featured} imageSize="fullSize" />
+            <PostPreview post={shown} imageSize="fullSize" />
           </>
         )
       }
@@ -66,11 +74,11 @@ const featured =
       <CategoryFilter categories={categories} currentCategory={category} />
       {
         posts.docs.length > 0 ? (
-          <CardContainer>
+          <div class="grid">
             {posts.docs.map((post) => (
-              <Card post={post} />
+              <PostCard post={post} />
             ))}
-          </CardContainer>
+          </div>
         ) : (
           <p class="empty">{category ? 'No posts in this category yet.' : 'No posts yet.'}</p>
         )
@@ -97,6 +105,22 @@ const featured =
 
     @media (max-width: 768px) {
       margin-bottom: var(--space-4);
+    }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-6);
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-8);
     }
   }
 
