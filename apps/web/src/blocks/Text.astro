@@ -1,0 +1,20 @@
+---
+import type { TextBlockProps } from 'cms/types'
+import Body from '../components/Body.astro'
+import Container from '../components/Container.astro'
+import Header from '../components/Header.astro'
+import Section from '../components/Section.astro'
+import { richTextToHTML } from '../lib/richText'
+
+type Props = TextBlockProps
+
+const { header, backgroundColor, body } = Astro.props
+const html = await richTextToHTML(body)
+---
+
+<Section backgroundColor={backgroundColor}>
+  <Container>
+    {header && <Header>{header}</Header>}
+    <Body><Fragment set:html={html} /></Body>
+  </Container>
+</Section>

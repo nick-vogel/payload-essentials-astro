@@ -1,0 +1,23 @@
+---
+import type { Page } from 'cms/types'
+import Hero from './Hero.astro'
+import Text from './Text.astro'
+
+type Props = { blocks: Page['blocks'] }
+
+const { blocks } = Astro.props
+---
+
+{
+  blocks?.map((block) => {
+    switch (block.blockType) {
+      case 'hero':
+        return <Hero {...block} />
+      case 'text':
+        return <Text {...block} />
+      // The TextAndImage and Cards blocks render nothing until the next ticket ports them.
+      default:
+        return null
+    }
+  })
+}

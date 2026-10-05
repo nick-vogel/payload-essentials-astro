@@ -1,0 +1,82 @@
+---
+import '../styles/global.css'
+import Navigation from '../components/Navigation.astro'
+import Footer from '../components/Footer.astro'
+import { findGlobal } from '../lib/cms'
+import type { PageMeta } from '../lib/meta'
+
+type Props = PageMeta
+
+const settings = await findGlobal('settings', { depth: 1 })
+const nav = await findGlobal('nav', { depth: 1 })
+
+// The same fallbacks as the Next.js root layout and generateMeta.
+const siteName = settings.siteName || 'Payload Essentials'
+const title = Astro.props.title ? `${Astro.props.title} | ${siteName}` : siteName
+const socialTitle = Astro.props.title || siteName
+const description = Astro.props.description || settings.siteDescription || ''
+const canonical = Astro.props.canonical
+const url = canonical || Astro.url.origin
+const image = Astro.props.image
+const gtmCode = settings.gtmCode
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/pe-icon.png" type="image/png" sizes="64x64" />
+    <link rel="icon" href="/pe-icon-reverse.png" type="image/png" sizes="64x64" media="(prefers-color-scheme: dark)" />
+    {canonical && <link rel="canonical" href={canonical} />}
+
+    <meta property="og:title" content={socialTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content="en_US" />
+    {image && <meta property="og:image" content={image} />}
+    <meta property="og:type" content="website" />
+
+    {/* Next.js fills the Twitter tags from Open Graph, so these repeat the values above. */}
+    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={socialTitle} />
+    <meta name="twitter:description" content={description} />
+    {image && <meta name="twitter:image" content={image} />}
+
+    {
+      gtmCode && (
+        <script is:inline define:vars={{ gtmCode }}>
+          (function (w, d, s, l, i) {
+            w[l] = w[l] || []
+            w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' })
+            var f = d.getElementsByTagName(s)[0],
+              j = d.createElement(s),
+              dl = l != 'dataLayer' ? '&l=' + l : ''
+            j.async = true
+            j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl
+            f.parentNode.insertBefore(j, f)
+          })(window, document, 'script', 'dataLayer', gtmCode)
+        </script>
+      )
+    }
+  </head>
+  <body>
+    {
+      gtmCode && (
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${gtmCode}`}
+            height="0"
+            width="0"
+            style="display:none;visibility:hidden"
+          />
+        </noscript>
+      )
+    }
+    <Navigation navItems={nav.navItems} logoColor={settings.logoColor} logoWhite={settings.logoWhite} />
+    <main><slot /></main>
+    <Footer navItems={nav.navItems} logoColor={settings.logoColor} logoWhite={settings.logoWhite} />
+  </body>
+</html>
