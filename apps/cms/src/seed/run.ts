@@ -7,10 +7,6 @@ import { seed } from '@/seed'
 const email = process.env.SEED_ADMIN_EMAIL || 'admin@example.com'
 const password = process.env.SEED_ADMIN_PASSWORD || randomBytes(12).toString('base64url')
 
-// The migrations own the schema. Without this, a dev-mode connect pushes the schema and marks
-// the database, so the next `payload migrate` stops on a prompt.
-process.env.PAYLOAD_MIGRATING = 'true'
-
 const payload = await getPayload({ config })
 await seed({ payload, admin: { email, password } })
 

@@ -13,8 +13,6 @@ const laneURL = new URL(process.env.DATABASE_URL!)
 const testURL = new URL(laneURL)
 testURL.pathname = `${laneURL.pathname}-seed-test-${process.pid}`
 process.env.DATABASE_URL = testURL.toString()
-// Skip the dev schema push so the migrations build the schema, as they do in production.
-process.env.PAYLOAD_MIGRATING = 'true'
 
 describe('seed', () => {
   let payload: Payload
