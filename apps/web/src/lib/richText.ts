@@ -13,7 +13,7 @@ import {
   LinkHTMLConverterAsync,
 } from '@payloadcms/richtext-lexical/html-async'
 import { pageHref, postHref } from './links'
-import { mediaFile } from './media'
+import { mediaFile, type MediaSize } from './media'
 
 // An internal link holds the linked document, populated by the query's depth.
 function internalDocToHref({ linkNode }: { linkNode: SerializedLinkNode }): string {
@@ -38,12 +38,14 @@ function escapeHTML(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
-type Size = keyof NonNullable<Media['sizes']>
-
 // A media document as MediaImage renders it. Its URLs are relative to the CMS, so this resolves them
 // against it and optimizes the image as Astro's Image does. The imageWrapper class is global, so it
 // frames this markup the same way.
-async function imageHTML(media: Media | string | null | undefined, size: Size, className?: string): Promise<string> {
+async function imageHTML(
+  media: Media | string | null | undefined,
+  size: MediaSize,
+  className?: string,
+): Promise<string> {
   const file = mediaFile(media, size)
   if (!file) return ''
 
@@ -65,12 +67,10 @@ async function uploadToHTML({ node }: { node: SerializedUploadNode }): Promise<s
 
 // The blocks below repeat the markup of Section, Container, Header and Body, and of the block
 // components in src/blocks. That markup only gets its scoped styles from an Astro component, so the
-// richTextBlock class marks it for the copies of those styles in global.css.
-function sectionHTML(
-  backgroundColor: 'primary' | 'secondary' | null | undefined,
-  header: string | null | undefined,
-  content: string,
-): string {
+// richTextBlock class marks it for the copies of those styles in global.css. Both blocks share these
+// two fields, so each passes its own fields in.
+function sectionHTML(fields: Pick<CardsBlockProps, 'header' | 'backgroundColor'>, content: string): string {
+  const { header, backgroundColor } = fields
   const heading = header ? `<h2 class="h2 center">${escapeHTML(header)}</h2>` : ''
   return (
     `<section class="container richTextBlock" data-background="${backgroundColor || 'primary'}">` +
@@ -80,13 +80,13 @@ function sectionHTML(
 }
 
 async function textAndImageToHTML({ node }: { node: SerializedBlockNode<TextAndImageBlockProps> }): Promise<string> {
-  const { header, backgroundColor, layout, image, body } = node.fields
+  const { layout, image, body } = node.fields
   const [html, imageMarkup] = await Promise.all([richTextToHTML(body), imageHTML(image, 'fullSize', 'image')])
   const content =
     `<div class="layout" data-layout="${layout || 'left'}">` +
     `<div class="textContent"><div class="body">${html}</div></div>${imageMarkup}` +
     `</div>`
-  return sectionHTML(backgroundColor, header, content)
+  return sectionHTML(node.fields, content)
 }
 
 async function cardToHTML(card: NonNullable<CardsBlockProps['cardsArray']>[number]): Promise<string> {
@@ -99,10 +99,9 @@ async function cardToHTML(card: NonNullable<CardsBlockProps['cardsArray']>[numbe
 }
 
 async function cardsToHTML({ node }: { node: SerializedBlockNode<CardsBlockProps> }): Promise<string> {
-  const { header, backgroundColor, cardsArray } = node.fields
-  const cards = await Promise.all((cardsArray ?? []).map(cardToHTML))
+  const cards = await Promise.all((node.fields.cardsArray ?? []).map(cardToHTML))
   const grid = cards.length > 0 ? `<div class="grid" data-cards="${cards.length}">${cards.join('')}</div>` : ''
-  return sectionHTML(backgroundColor, header, grid)
+  return sectionHTML(node.fields, grid)
 }
 
 const converters: HTMLConvertersFunctionAsync<

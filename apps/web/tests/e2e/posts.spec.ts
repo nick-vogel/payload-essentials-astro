@@ -44,9 +44,9 @@ test.describe('posts at /blog/<slug>', () => {
     await page.goto(`/blog/${slug}`)
     const article = body(page, title)
 
-    // An even post holds the meadow. The upload comes before the blocks, whose Pages card holds it too.
+    // An even post holds the meadow. The Pages card holds it too, so the check looks inside the upload only.
     await expect(
-      article.getByRole('img', { name: 'Tall grass in a meadow, backlit by a low golden sun' }).first(),
+      article.locator('.upload').getByRole('img', { name: 'Tall grass in a meadow, backlit by a low golden sun' }),
     ).toBeVisible()
     await expect(article.getByRole('link', { name: 'about the course' })).toHaveAttribute('href', '/about')
     await expect(article.getByRole('link', { name: 'ask us a question' })).toHaveAttribute('href', '/contact')
@@ -68,18 +68,26 @@ test.describe('posts at /blog/<slug>', () => {
     await expect(cardsSection).toHaveAttribute('data-background', 'secondary')
     const cards = cardsSection.getByRole('article')
     await expect(cards).toHaveCount(3)
-    for (const [index, { title, body, alt }] of [
-      { title: 'Pages', body: 'Built from blocks.', alt: 'Tall grass in a meadow, backlit by a low golden sun' },
-      { title: 'Posts', body: 'Written in rich text.', alt: /^A wooden desk/ },
-      { title: 'Media', body: 'Uploaded once, used everywhere.', alt: 'A forested mountain ridge wrapped in low cloud' },
+    for (const [index, { cardTitle, cardBody, alt }] of [
+      {
+        cardTitle: 'Pages',
+        cardBody: 'Built from blocks.',
+        alt: 'Tall grass in a meadow, backlit by a low golden sun',
+      },
+      { cardTitle: 'Posts', cardBody: 'Written in rich text.', alt: /^A wooden desk/ },
+      {
+        cardTitle: 'Media',
+        cardBody: 'Uploaded once, used everywhere.',
+        alt: 'A forested mountain ridge wrapped in low cloud',
+      },
     ].entries()) {
       const card = cards.nth(index)
-      await expect(card.getByRole('heading', { level: 3, name: title })).toBeVisible()
-      await expect(card).toContainText(body)
+      await expect(card.getByRole('heading', { level: 3, name: cardTitle })).toBeVisible()
+      await expect(card).toContainText(cardBody)
       await expect(card.getByRole('img', { name: alt })).toBeVisible()
     }
 
-    // The four block images, each with a srcset candidate or more.
+    // Each block yields at least one image URL, and every one of them answers with a 200.
     for (const section of [textAndImage, cardsSection]) {
       const urls = await imageURLs(page, section)
       expect(urls.length).toBeGreaterThan(0)
@@ -115,8 +123,8 @@ test.describe('posts at /blog/<slug>', () => {
       await page.goto(`/blog/${slug}`)
 
       const urls = await imageURLs(page)
-      // The two logos and the featured image at least. The first post's body upload is its featured
-      // image too, so the two share one URL.
+      // The two logos, the featured image and the body upload at least. Images that repeat on the page
+      // share a URL, and the first post's body upload is its featured image too, so the floor counts them once.
       expect(urls.length).toBeGreaterThanOrEqual(3)
       for (const url of urls) {
         const response = await request.get(url)

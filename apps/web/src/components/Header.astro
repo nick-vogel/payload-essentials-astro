@@ -1,6 +1,9 @@
 ---
 import type { HTMLAttributes } from 'astro/types'
 
+// These styles are copied to global.css under .richTextBlock for the rich text blocks, so keep the
+// two in step.
+
 type Props = HTMLAttributes<'h2'> & {
   as?: 'h1' | 'h2' | 'h3'
   align?: 'left' | 'center'

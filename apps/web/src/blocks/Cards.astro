@@ -7,7 +7,9 @@ import MediaImage from '../components/MediaImage.astro'
 import Section from '../components/Section.astro'
 import { richTextToHTML } from '../lib/richText'
 
-// The bare block fields, so the rich text converter can render this block too.
+// The rich text converter in src/lib/richText.ts repeats this markup, and global.css repeats these
+// styles under .richTextBlock, so a change here belongs there too.
+
 type Props = CardsBlockProps
 
 const { header, backgroundColor, cardsArray } = Astro.props
