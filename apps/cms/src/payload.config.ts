@@ -4,7 +4,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
-import {getServerSideURL} from '@/utilities/getUrl'
+import {getDocPath, getServerSideURL} from '@/utilities/getUrl'
 
 import { Users } from './collections/Users/config'
 import { Media } from './collections/Media/config'
@@ -91,10 +91,7 @@ export default buildConfig({
         if (collectionSlug === 'pages') return doc?.title
         return 'Payload Essentials Course by Nick Vogel'
       },
-      generateURL: ({ doc, collectionSlug }) => {
-        const isHome = doc.slug === 'home'
-        return `${getServerSideURL()}${collectionSlug === 'pages' ? '' : `/${collectionSlug}`}/${isHome ? '' : doc.slug}`
-      },
+      generateURL: ({ doc, collectionSlug }) => `${getServerSideURL()}${getDocPath(collectionSlug, doc.slug)}`,
       generateImage: ({ doc }) => doc.featuredImage,
     }),
   ],

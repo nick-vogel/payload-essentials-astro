@@ -3,6 +3,7 @@ import '../styles/global.css'
 import Navigation from '../components/Navigation.astro'
 import Footer from '../components/Footer.astro'
 import { findGlobal } from '../lib/cms'
+import { siteOrigin } from '../lib/links'
 import type { PageMeta } from '../lib/meta'
 
 type Props = PageMeta
@@ -17,8 +18,7 @@ const siteName = settings.siteName || 'Payload Essentials'
 const title = pageTitle ? `${pageTitle} | ${siteName}` : siteName
 const socialTitle = pageTitle || siteName
 const description = pageDescription || settings.siteDescription || ''
-// SITE_URL sets Astro.site. The request origin is the last resort, and is wrong behind a proxy.
-const url = canonical || Astro.site?.href || Astro.url.origin
+const url = canonical || siteOrigin(Astro)
 const gtmCode = settings.gtmCode
 ---
 

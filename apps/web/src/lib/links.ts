@@ -16,3 +16,8 @@ export function postHref(slug: string): string {
 export function navLinks(navItems: Nav['navItems']): Page[] {
   return (navItems ?? []).flatMap(({ link }) => (typeof link === 'object' ? [link] : []))
 }
+
+// The base for absolute URLs. SITE_URL sets `site`. The request origin is the last resort, and is wrong behind a proxy.
+export function siteOrigin({ site, url }: { site: URL | undefined; url: URL }): string {
+  return site?.href ?? url.origin
+}
