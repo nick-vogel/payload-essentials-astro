@@ -23,13 +23,16 @@ This is a pnpm workspace. The Payload app lives in `apps/cms` as the `cms` packa
 ```
 apps/cms/src/
 ├── app/
-│   ├── (frontend)/          # Frontend routes
-│   └── (payload)/           # Payload admin routes
-├── collections/             # Collection configs
+│   └── (payload)/           # Payload admin and API routes
+├── blocks/                  # Block configs
+├── collections/             # Collection configs and their hooks
+├── custom/                  # Custom admin components
+├── fields/                  # Shared field configs
 ├── globals/                 # Global configs
-├── components/              # Custom React components
-├── hooks/                   # Hook functions
-├── access/                  # Access control functions
+├── migrations/              # Generated migrations
+├── seed/                    # Seed script
+├── utilities/               # Shared helpers
+├── payload-types.ts         # Generated types
 └── payload.config.ts        # Main config
 ```
 
