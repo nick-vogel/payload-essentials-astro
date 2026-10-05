@@ -1,0 +1,130 @@
+---
+import CategoryFilter from '../../components/CategoryFilter.astro'
+import Container from '../../components/Container.astro'
+import Header from '../../components/Header.astro'
+import Pagination from '../../components/Pagination.astro'
+import PostCard from '../../components/PostCard.astro'
+import PostPreview from '../../components/PostPreview.astro'
+import Section from '../../components/Section.astro'
+import Base from '../../layouts/Base.astro'
+import { findFilterCategories, findPage, findPostPreviews } from '../../lib/cms'
+import { blogHref } from '../../lib/links'
+import { docMeta } from '../../lib/meta'
+
+const POSTS_PER_PAGE = 8
+
+const pageParam = Astro.url.searchParams.get('page')
+const category = Astro.url.searchParams.get('category')
+
+// Page 1 has no param. Anything but a whole number from 1 up is not a page of the list.
+if (pageParam !== null && !/^[1-9]\d*$/.test(pageParam)) return Astro.rewrite('/404')
+const currentPage = pageParam ? Number(pageParam) : 1
+
+// Without JavaScript, the filter form submits "All categories" as an empty param. A 302 rather than a
+// 301, because browsers keep a 301 for good and this is a form submission, not a page that moved.
+if (category === '') return Astro.redirect(blogHref({ page: currentPage }), 302)
+
+const [blogPage, categories, featuredPosts] = await Promise.all([
+  findPage('blog'),
+  findFilterCategories(),
+  findPostPreviews({ where: { featured: { equals: true } }, limit: 1, pagination: false }),
+])
+
+if (!blogPage) return Astro.rewrite('/404')
+
+// With no featured post, the latest post takes its place, as in the Next.js blog page.
+const featured = featuredPosts.docs[0]
+const shown = featured ?? (await findPostPreviews({ sort: '-date', limit: 1, pagination: false })).docs[0]
+
+// The post above the grid stays there on every page and every category, and the grid never shows it.
+const posts = await findPostPreviews({
+  where: {
+    and: [
+      ...(shown ? [{ id: { not_equals: shown.id } }] : []),
+      ...(category ? [{ 'category.slug': { equals: category } }] : []),
+    ],
+  },
+  sort: '-date',
+  page: currentPage,
+  limit: POSTS_PER_PAGE,
+})
+
+if (currentPage > 1 && currentPage > posts.totalPages) return Astro.rewrite('/404')
+---
+
+<Base {...docMeta(blogPage)}>
+  <Section>
+    <Container>
+      <Header as="h1" align="left" class="pageTitle">{blogPage.title}</Header>
+      {
+        shown && (
+          <>
+            <Header align="left" class="featuredTitle">
+              {featured ? 'Featured post' : 'Latest post'}
+            </Header>
+            <PostPreview post={shown} imageSize="fullSize" />
+          </>
+        )
+      }
+    </Container>
+  </Section>
+  <Section backgroundColor="secondary">
+    <Container>
+      <Header>More posts</Header>
+      <CategoryFilter categories={categories} currentCategory={category} />
+      {
+        posts.docs.length > 0 ? (
+          <div class="grid">
+            {posts.docs.map((post) => (
+              <PostCard post={post} />
+            ))}
+          </div>
+        ) : (
+          <p class="empty">{category ? 'No posts in this category yet.' : 'No posts yet.'}</p>
+        )
+      }
+      <Pagination
+        currentPage={currentPage}
+        totalPages={posts.totalPages}
+        href={(pageNumber) => blogHref({ page: pageNumber, category })}
+      />
+    </Container>
+  </Section>
+</Base>
+
+<style>
+  .pageTitle {
+    margin-top: 0;
+  }
+
+  .featuredTitle {
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-6);
+
+    @media (max-width: 768px) {
+      margin-bottom: var(--space-4);
+    }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-6);
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-8);
+    }
+  }
+
+  .empty {
+    text-align: center;
+  }
+</style>

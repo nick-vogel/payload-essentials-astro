@@ -1,0 +1,94 @@
+---
+import type { FilterCategory } from '../lib/cms'
+import { blogHref } from '../lib/links'
+
+type Props = {
+  categories: FilterCategory[]
+  currentCategory?: string | null
+}
+
+const { categories, currentCategory } = Astro.props
+---
+
+{/* A plain GET form, so the filter works without JavaScript. The script below submits on change and hides the button. */}
+<form class="filter" method="get" action={blogHref()} data-category-filter>
+  <label for="category-filter" class="label">Category</label>
+  <select id="category-filter" name="category" class="select">
+    <option value="" selected={!currentCategory}>All categories</option>
+    {
+      categories.map((category) => (
+        <option value={category.slug} selected={category.slug === currentCategory}>
+          {category.name}
+        </option>
+      ))
+    }
+  </select>
+  <button type="submit" class="button">Filter</button>
+</form>
+
+<script is:inline>
+  // Inline, so it is not bundled and imports nothing. "All categories" goes to the bare action, so the
+  // URL is /blog rather than /blog?category=.
+  for (const form of document.querySelectorAll('[data-category-filter]')) {
+    const select = form.querySelector('select')
+    form.querySelector('button').hidden = true
+    select.addEventListener('change', () => {
+      if (select.value) form.requestSubmit()
+      else location.assign(form.action)
+    })
+  }
+</script>
+
+<style>
+  .filter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    margin-bottom: var(--space-8);
+  }
+
+  .label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: light-dark(var(--dark-gray), var(--light-gray));
+    white-space: nowrap;
+  }
+
+  .select,
+  .button {
+    color: light-dark(var(--black), var(--white));
+    border: 1px solid light-dark(var(--dark-gray), var(--light-gray));
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.875rem;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-base), border-color var(--transition-base);
+
+    &:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    &:focus-visible {
+      outline: 2px solid light-dark(var(--black), var(--white));
+      outline-offset: 2px;
+      border-color: transparent;
+    }
+
+    @media (max-width: 768px) {
+      font-size: 0.8125rem;
+    }
+  }
+
+  .select {
+    appearance: none;
+    padding-right: var(--space-8);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a4a4a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right var(--space-3) center;
+  }
+
+  .button {
+    background: light-dark(var(--white), var(--black));
+  }
+</style>

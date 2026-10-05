@@ -17,3 +17,8 @@ export function headMeta(page: Page) {
   return (attribute: 'name' | 'property', key: string) =>
     head.locator(`meta[${attribute}="${key}"]`).getAttribute('content')
 }
+
+// The section in the main landmark that holds the given heading.
+export function sectionByHeading(page: Page, heading: string) {
+  return page.getByRole('main').locator('section', { has: page.getByRole('heading', { name: heading, exact: true }) })
+}
