@@ -1,11 +1,7 @@
 import { type GlobalConfig } from 'payload'
-import { revalidateGlobal } from '@/globals/hooks/revalidateGlobal'
 
 export const Settings: GlobalConfig = {
   slug: 'settings',
-  hooks: {
-    afterChange: [revalidateGlobal],
-  },
   fields: [
     {
       type: 'text',

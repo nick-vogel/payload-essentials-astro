@@ -26,6 +26,8 @@ const nextConfig: NextConfig = {
 
     return webpackConfig
   },
+  // The public site is the Astro app, so the CMS root sends editors to the admin panel.
+  redirects: async () => [{ source: '/', destination: '/admin', permanent: false }],
   turbopack: {
     root: path.resolve(dirname, '../..'),
   },

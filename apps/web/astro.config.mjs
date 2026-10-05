@@ -2,7 +2,6 @@
 import { defineConfig } from 'astro/config'
 import node from '@astrojs/node'
 import { loadEnv } from 'payload/node'
-import { fileURLToPath } from 'url'
 
 // Astro loads .env into import.meta.env only, but the CMS config reads
 // process.env. This loads the .env files into process.env, as Payload's
@@ -20,9 +19,6 @@ export default defineConfig({
       // Vite applies a tsconfig's paths only to files that tsconfig includes, so
       // @/ resolves to apps/cms/src for CMS files and stays free for the web app.
       tsconfigPaths: true,
-      alias: {
-        'next/cache': fileURLToPath(new URL('./src/stubs/next-cache.ts', import.meta.url)),
-      },
     },
   },
 })

@@ -1,6 +1,5 @@
 import { type CollectionConfig, slugField } from 'payload'
 import { SEOField } from '@/fields/seo/config'
-import { deletePage, updatePage } from './hooks/revalidatePage'
 
 export const Pages: CollectionConfig = {
   slug: 'pages',
@@ -10,10 +9,6 @@ export const Pages: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-  },
-  hooks: {
-    afterChange: [updatePage],
-    afterDelete: [deletePage],
   },
   access: {
     read: () => true,

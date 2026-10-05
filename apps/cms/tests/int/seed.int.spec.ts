@@ -1,7 +1,7 @@
 // @vitest-environment node
 import fs from 'fs'
 import path from 'path'
-import type { Payload } from 'payload'
+import { createLocalReq, type Payload } from 'payload'
 import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { migrations } from '@/migrations'
@@ -106,6 +106,29 @@ describe('seed', () => {
         if (size?.filename) expect(fs.existsSync(path.join(staticDir, size.filename))).toBe(true)
       }
     }
+  })
+
+  // A Local API save from a script or the web app has no Next.js request around it.
+  it('saves a page, a post and both globals outside a Next.js request', async () => {
+    const req = await createLocalReq({}, payload)
+    const [page] = (await payload.find({ collection: 'pages', limit: 1, depth: 0, req })).docs
+    const [post] = (await payload.find({ collection: 'posts', limit: 1, depth: 0, req })).docs
+    const { siteName } = await payload.findGlobal({ slug: 'settings', depth: 0, req })
+    const { navItems } = await payload.findGlobal({ slug: 'nav', depth: 0, req })
+
+    // Each save writes back the values the document already has, so later tests see the seeded data.
+    await expect(
+      payload.update({ collection: 'pages', id: page.id, data: { title: page.title }, depth: 0, req }),
+    ).resolves.toMatchObject({ title: page.title })
+    await expect(
+      payload.update({ collection: 'posts', id: post.id, data: { title: post.title }, depth: 0, req }),
+    ).resolves.toMatchObject({ title: post.title })
+    await expect(
+      payload.updateGlobal({ slug: 'settings', data: { siteName }, depth: 0, req }),
+    ).resolves.toMatchObject({ siteName })
+    await expect(
+      payload.updateGlobal({ slug: 'nav', data: { navItems }, depth: 0, req }),
+    ).resolves.toMatchObject({ navItems })
   })
 
   it('refuses to run on a database that already has content', async () => {
