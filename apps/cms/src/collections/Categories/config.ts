@@ -5,6 +5,13 @@ export const Categories: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
   },
+  access: {
+    // The Astro site reads categories without a user, for the post cards and the blog filter.
+    read: () => true,
+    create: ({ req }) => Boolean(req.user),
+    update: ({ req }) => Boolean(req.user),
+    delete: ({ req }) => Boolean(req.user),
+  },
   fields: [
     {
       type: 'text',
