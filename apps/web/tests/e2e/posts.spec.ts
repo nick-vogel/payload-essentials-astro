@@ -60,6 +60,17 @@ test.describe('posts at /blog/<slug>', () => {
     ).toBeVisible()
   })
 
+  // The second post ends its body with an internal link to the first post.
+  test('points an internal link to another post at that post', async ({ page }) => {
+    const [first, second] = posts
+    await page.goto(`/blog/${second.slug}`)
+
+    await expect(body(page, second.title).getByRole('link', { name: first.title, exact: true })).toHaveAttribute(
+      'href',
+      `/blog/${first.slug}`,
+    )
+  })
+
   for (const { slug } of [posts[0], posts[1]]) {
     test(`serves every image URL on /blog/${slug}`, async ({ page, request }) => {
       await page.goto(`/blog/${slug}`)
