@@ -321,6 +321,7 @@ async function createContent(payload: Payload, req: PayloadRequest, admin: SeedA
   // A week apart, so the previous and next links on each post have a fixed order.
   const firstDate = Date.parse('2026-01-05T14:00:00.000Z')
   const week = 7 * 24 * 60 * 60 * 1000
+  let firstPost: Post | undefined
   for (const [index, post] of posts.entries()) {
     const body: BodyNode[] = [
       paragraph(text(post.summary)),
@@ -357,8 +358,12 @@ async function createContent(payload: Payload, req: PayloadRequest, admin: SeedA
         }),
       )
     }
+    // The second post links back to the first, so the front end has a link from one post to another.
+    if (index === 1 && firstPost) {
+      body.push(paragraph(text('New here? Start with '), internalLink('posts', firstPost.id, firstPost.title), text('.')))
+    }
 
-    await payload.create({
+    const created = await payload.create({
       collection: 'posts',
       data: {
         slug: post.slug,
@@ -373,6 +378,7 @@ async function createContent(payload: Payload, req: PayloadRequest, admin: SeedA
       },
       req,
     })
+    firstPost ??= created
   }
 
   payload.logger.info('Seeding globals')

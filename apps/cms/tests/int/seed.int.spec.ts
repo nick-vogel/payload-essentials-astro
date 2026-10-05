@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { migrations } from '@/migrations'
 import { seed } from '@/seed'
 import { getServerSideURL } from '@/utilities/getUrl'
+import type { Post } from '@/payload-types'
 
 // The seed needs an empty database, so this file runs on a throwaway one.
 // The postgres adapter creates it on connect, and afterAll drops it.
@@ -104,6 +105,26 @@ describe('seed', () => {
       docs.some((post) =>
         ['upload', 'link', 'block:cards', 'block:textAndImage'].every((kind) => nodeKinds(post).has(kind)),
       ),
+    ).toBe(true)
+  })
+
+  it('links one post to another post in its body', async () => {
+    const { docs } = await payload.find({ collection: 'posts', limit: 0, depth: 0 })
+    const postIDs = new Set(docs.map((post) => post.id))
+    const linkedPostIDs = (post: (typeof docs)[number]) => {
+      const ids: unknown[] = []
+      type LinkNode = { type: string; children?: unknown; fields?: { doc?: { relationTo: string; value: unknown } } }
+      const walk = (nodes: LinkNode[]) => {
+        for (const node of nodes) {
+          if (node.type === 'link' && node.fields?.doc?.relationTo === 'posts') ids.push(node.fields.doc.value)
+          if (Array.isArray(node.children)) walk(node.children)
+        }
+      }
+      walk(post.body.root.children)
+      return ids
+    }
+    expect(
+      docs.some((post) => linkedPostIDs(post).some((id) => id !== post.id && postIDs.has(id as Post['id']))),
     ).toBe(true)
   })
 
