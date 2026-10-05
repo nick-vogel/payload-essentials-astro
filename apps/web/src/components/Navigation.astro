@@ -1,0 +1,224 @@
+---
+import Logo from './Logo.astro'
+import type { ChromeProps } from '../lib/chrome'
+import { navLinks, pageHref } from '../lib/links'
+
+type Props = ChromeProps
+
+const { navItems, logoColor, logoWhite } = Astro.props
+const links = navLinks(navItems)
+---
+
+<nav class="navigation" aria-label="Main navigation" data-navigation>
+  <Logo class="logo" logoColor={logoColor} logoWhite={logoWhite} />
+  <button class="hamburger" type="button" aria-label="Open menu" aria-expanded="false" data-menu-toggle>
+    <svg class="menuIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 5h16" /><path d="M4 12h16" /><path d="M4 19h16" />
+    </svg>
+    <svg class="closeIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+    </svg>
+  </button>
+  <div class="overlay" aria-hidden="true" data-menu-overlay></div>
+  <div class="navLinkContainer" role="menu">
+    {
+      links.map((link) => (
+        <a class="navItem" href={pageHref(link.slug)} role="menuitem">
+          {link.title}
+        </a>
+      ))
+    }
+  </div>
+</nav>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-navigation]')!
+  const toggle = nav.querySelector<HTMLButtonElement>('[data-menu-toggle]')!
+  const overlay = nav.querySelector<HTMLElement>('[data-menu-overlay]')!
+
+  function setOpen(open: boolean) {
+    nav.classList.toggle('menuOpen', open)
+    toggle.setAttribute('aria-expanded', String(open))
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu')
+    // Scroll lock, so the page behind the open menu stays put.
+    document.body.style.overflow = open ? 'hidden' : ''
+    if (open) document.addEventListener('keydown', onKeyDown)
+    else document.removeEventListener('keydown', onKeyDown)
+  }
+
+  // Escape closes the menu. Tab and Shift+Tab wrap around inside the navigation.
+  function onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      setOpen(false)
+      toggle.focus()
+      return
+    }
+    if (event.key !== 'Tab') return
+    const focusable = nav.querySelectorAll<HTMLElement>('a[href], button, [tabindex]:not([tabindex="-1"])')
+    if (focusable.length === 0) return
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+    }
+  }
+
+  toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'))
+  overlay.addEventListener('click', () => setOpen(false))
+  nav.querySelectorAll('[role="menuitem"]').forEach((link) => link.addEventListener('click', () => setOpen(false)))
+</script>
+
+<style>
+  .navigation {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-nav);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4) var(--space-6);
+    max-width: calc(var(--container-max) + var(--space-12));
+    margin: 0 auto;
+    @media (min-width: 768px) {
+      padding: var(--space-5) var(--space-8);
+      max-width: calc(var(--container-max) + var(--space-16));
+    }
+
+    @media (min-width: 1024px) {
+      padding: var(--space-6) var(--space-12);
+      max-width: calc(var(--container-max) + var(--space-12) * 2);
+    }
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    width: 10rem;
+    z-index: var(--z-nav-top);
+    background-color: var(--transluscent);
+    backdrop-filter: blur(50px);
+    border-radius: var(--radius-xl);
+    padding: var(--space-2) var(--space-4);
+
+    /* The picture lives in the Logo component, outside this scope. */
+    & :global(picture:hover) {
+      opacity: 0.9;
+    }
+  }
+
+  .hamburger {
+    display: none;
+    cursor: pointer;
+    z-index: var(--z-nav-top);
+    padding: var(--space-2);
+    background: none;
+    border: none;
+    color: inherit;
+    @media (max-width: 768px) {
+      display: block;
+      background-color: light-dark(var(--white-50), var(--black-50));
+      backdrop-filter: blur(50px);
+      border-radius: var(--radius-xl);
+    }
+  }
+
+  .menuIcon {
+    display: block;
+  }
+
+  .closeIcon {
+    display: none;
+  }
+
+  .menuOpen .hamburger .menuIcon {
+    display: none;
+  }
+
+  .menuOpen .hamburger .closeIcon {
+    display: block;
+  }
+
+  .navLinkContainer {
+    display: flex;
+    align-items: center;
+    background-color: var(--transluscent);
+    backdrop-filter: blur(50px);
+    border-radius: var(--radius-xl);
+    padding: 0 var(--space-4);
+    transition: right var(--transition-medium);
+    @media (max-width: 768px) {
+      position: fixed;
+      z-index: var(--z-nav);
+      top: 0;
+      right: -100%;
+      height: 100vh;
+      width: 70%;
+      max-width: 300px;
+      flex-direction: column;
+      padding: var(--space-16) var(--space-8) var(--space-8);
+      background-color: light-dark(var(--white), var(--black));
+      border-radius: 0;
+      transition: right var(--transition-slow);
+      box-shadow: -2px 0 10px var(--black-50);
+    }
+  }
+
+  .navItem {
+    margin: var(--space-2) 0;
+    padding: var(--space-2);
+    text-decoration: none;
+    color: light-dark(var(--black), var(--white));
+    transition: color var(--transition-medium);
+
+    &:hover {
+      color: light-dark(var(--black-50), var(--white-50));
+      text-decoration: underline;
+    }
+
+    &:focus {
+      color: light-dark(var(--black-50), var(--white-50));
+      text-decoration: underline;
+    }
+    @media (max-width: 768px) {
+      width: 100%;
+      text-align: center;
+      padding: var(--space-4);
+      margin: var(--space-2) 0;
+      font-size: 1.2rem;
+    }
+  }
+
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background-color: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
+    transition: background-color var(--transition-slow), backdrop-filter var(--transition-slow);
+    z-index: 99;
+    @media (max-width: 768px) {
+      cursor: pointer;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .menuOpen .navLinkContainer {
+      right: 0;
+    }
+
+    .menuOpen .overlay {
+      display: block;
+      backdrop-filter: blur(10px);
+      pointer-events: auto;
+      background-color: var(--black-50);
+      transition: background-color 0.4s ease-in-out, backdrop-filter 0.4s ease-in-out;
+    }
+  }
+</style>
