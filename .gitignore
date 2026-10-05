@@ -18,6 +18,10 @@ coverage/
 
 # production
 /apps/*/build/
+/apps/*/dist/
+
+# astro
+.astro/
 
 # misc
 .DS_Store

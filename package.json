@@ -5,8 +5,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter cms build",
+    "build": "pnpm --filter cms --filter web build",
     "dev": "pnpm --filter cms dev",
+    "dev:cms": "pnpm --filter cms dev",
+    "dev:web": "pnpm --filter web dev",
     "lint": "pnpm --filter cms lint",
     "payload": "pnpm --filter cms payload",
     "test": "pnpm --filter cms test:int"
