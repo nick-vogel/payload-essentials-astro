@@ -83,7 +83,7 @@ Environment variables:
 - `DATABASE_URL`: Velocity does not set it for you. Write it by hand with the host `127.0.0.1`, for example `postgres://USER:PASSWORD@127.0.0.1:5432/DATABASE`, with the user, password, and database name of the Postgres database you added.
 - `PAYLOAD_SECRET`: a long random string. The web app uses the same value.
 - `NEXT_PUBLIC_SERVER_URL`: the web app's Velocity URL. The CMS builds canonical URLs and the SEO preview from it, so they point at the public site.
-- `RESEND_API_KEY`: your Resend API key, for the emails the admin panel sends.
+- `RESEND_API_KEY` (optional): your Resend API key. The CMS starts without it, but the emails the admin panel sends, such as a password reset, fail.
 - `MEDIA_DIR` (optional): an absolute path for uploads. By default they go to `apps/cms/media`, which a redeploy keeps.
 
 There is no SSH on Velocity, so the build command runs the migrations. The production database starts empty: open `/admin` on the CMS app's URL and create the first user there.
