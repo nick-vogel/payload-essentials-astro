@@ -82,11 +82,22 @@ Environment variables:
 
 - `DATABASE_URL`: Velocity does not set it for you. Write it by hand with the host `127.0.0.1`, for example `postgres://USER:PASSWORD@127.0.0.1:5432/DATABASE`, with the user, password, and database name of the Postgres database you added.
 - `PAYLOAD_SECRET`: a long random string. The web app uses the same value.
-- `NEXT_PUBLIC_SERVER_URL`: the web app's Velocity URL. The CMS builds canonical URLs and the SEO preview from it, so they point at the public site.
+- `NEXT_PUBLIC_SERVER_URL` (optional): the web app's Velocity URL. The CMS builds canonical URLs and the SEO preview from it, so they point at the public site. The CMS writes a canonical URL when you save a page or post, and anything saved without this variable keeps `http://localhost:3000`. To set it before the first build, create the web app first so you know its URL.
 - `RESEND_API_KEY` (optional): your Resend API key. The CMS starts without it, but the emails the admin panel sends, such as a password reset, fail.
 - `MEDIA_DIR` (optional): an absolute path for uploads. By default they go to `apps/cms/media`, which a redeploy keeps.
 
-There is no SSH on Velocity, so the build command runs the migrations. The production database starts empty: open `/admin` on the CMS app's URL and create the first user there.
+There is no SSH on Velocity, so the build command runs the migrations.
+
+The production database starts empty. You can fill it with the seed data, or start from an empty site.
+
+To seed it, the first build runs the seed too:
+
+1. Set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in the CMS app's environment variables. You log in with them.
+2. Set the build command to `pnpm payload migrate && pnpm payload run src/seed/run.ts && pnpm build`, and deploy.
+3. Once the build succeeds, set the build command back to `pnpm payload migrate && pnpm build`. The seed refuses to run on a database that has content, so every later build would fail.
+4. Log in at `/admin` on the CMS app's URL. You can remove the two `SEED_ADMIN_` variables now.
+
+To start from an empty site, skip the seed: open `/admin` on the CMS app's URL and create the first user there.
 
 ### The web app
 
