@@ -247,7 +247,7 @@ async function createContent(payload: Payload, req: PayloadRequest, admin: SeedA
     title: 'About',
     featuredImage: media.mountain.id,
     blocks: [
-      { blockType: 'hero', title: 'About the course' },
+      { blockType: 'hero', title: 'About the course', showHeroImage: true, heroImage: media.mountain.id },
       {
         blockType: 'text',
         header: 'Why Payload Essentials',
@@ -271,7 +271,7 @@ async function createContent(payload: Payload, req: PayloadRequest, admin: SeedA
     title: 'Contact',
     featuredImage: media.meadow.id,
     blocks: [
-      { blockType: 'hero', title: 'Get in touch' },
+      { blockType: 'hero', title: 'Get in touch', showHeroImage: true, heroImage: media.meadow.id },
       {
         blockType: 'text',
         body: plainText('Send a question about the course and we will get back to you within two working days.'),

@@ -11,6 +11,9 @@ test.describe('pages at their slug', () => {
 
     const main = page.getByRole('main')
     await expect(main.getByRole('heading', { level: 1, name: 'About the course' })).toBeVisible()
+    await expect(
+      sectionByHeading(page, 'About the course').getByRole('img', { name: 'A forested mountain ridge wrapped in low cloud' }),
+    ).toBeVisible()
     await expect(sectionByHeading(page, 'Why Payload Essentials')).toContainText(
       'Payload Essentials teaches you to build a content managed site from an empty folder to a live deployment.',
     )
@@ -29,6 +32,9 @@ test.describe('pages at their slug', () => {
 
     const main = page.getByRole('main')
     await expect(main.getByRole('heading', { level: 1, name: 'Get in touch' })).toBeVisible()
+    await expect(
+      sectionByHeading(page, 'Get in touch').getByRole('img', { name: 'Tall grass in a meadow, backlit by a low golden sun' }),
+    ).toBeVisible()
     await expect(main).toContainText(
       'Send a question about the course and we will get back to you within two working days.',
     )
