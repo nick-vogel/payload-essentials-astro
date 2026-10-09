@@ -56,6 +56,12 @@ const links = navLinks(navItems)
     @media (min-width: 768px) {
       max-width: 200px;
     }
+
+    /* A fixed height, so a square icon and a wide wordmark both fit. */
+    & :global(img) {
+      height: 48px;
+      width: auto;
+    }
   }
 
   .nav {

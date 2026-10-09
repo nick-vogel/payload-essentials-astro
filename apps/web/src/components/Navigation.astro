@@ -97,7 +97,6 @@ const links = navLinks(navItems)
   .logo {
     display: flex;
     align-items: center;
-    width: 10rem;
     z-index: var(--z-nav-top);
     background-color: var(--transluscent);
     backdrop-filter: blur(50px);
@@ -107,6 +106,12 @@ const links = navLinks(navItems)
     /* The picture lives in the Logo component, outside this scope. */
     & :global(picture:hover) {
       opacity: 0.9;
+    }
+
+    /* A fixed height, so a square icon and a wide wordmark both fit the bar. */
+    & :global(img) {
+      height: 40px;
+      width: auto;
     }
   }
 

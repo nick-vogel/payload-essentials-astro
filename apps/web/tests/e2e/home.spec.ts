@@ -49,6 +49,20 @@ test.describe('home page', () => {
     }
   })
 
+  // The seeded logo is a square icon. A logo sized by width alone grows as tall as it is wide.
+  test('keeps both logos to a fixed height whatever the image shape', async ({ page }) => {
+    await page.goto('/')
+
+    const logos = [
+      [page.getByRole('navigation', { name: 'Main navigation' }), 40],
+      [page.getByRole('contentinfo'), 48],
+    ] as const
+    for (const [region, height] of logos) {
+      const box = await region.getByRole('img', { name: 'Payload Essentials logo' }).boundingBox()
+      expect(box?.height).toBe(height)
+    }
+  })
+
   test('opens the mobile menu, keeps focus inside it and closes it on Escape', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/')
