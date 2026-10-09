@@ -1,0 +1,28 @@
+---
+// These styles are copied to global.css under .richTextBlock for the rich text blocks, so keep the
+// two in step.
+---
+
+<div class="body">
+  <slot />
+</div>
+
+<style>
+  .body {
+    font-size: 1rem;
+    line-height: 1.6;
+
+    @media (min-width: 768px) {
+      font-size: 1.125rem;
+      line-height: 1.7;
+    }
+
+    :global(p:first-child) {
+      margin-top: 0;
+    }
+
+    :global(p:last-child) {
+      margin-bottom: 0;
+    }
+  }
+</style>

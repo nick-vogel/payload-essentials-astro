@@ -1,0 +1,16 @@
+---
+import PageView from '../layouts/PageView.astro'
+import { findPage } from '../lib/cms'
+import { HOME_SLUG } from '../lib/links'
+
+const { slug } = Astro.params
+
+// The home page renders at the root only, so /home points there for good.
+if (slug === HOME_SLUG) return Astro.redirect('/', 301)
+
+const page = slug ? await findPage(slug) : null
+
+if (!page) return Astro.rewrite('/404')
+---
+
+<PageView page={page} />

@@ -1,0 +1,102 @@
+---
+import Logo from './Logo.astro'
+import type { ChromeProps } from '../lib/chrome'
+import { navLinks, pageHref } from '../lib/links'
+
+type Props = ChromeProps
+
+const { navItems, logoColor, logoWhite } = Astro.props
+const links = navLinks(navItems)
+---
+
+<footer class="footer">
+  <div class="content">
+    <Logo class="logo" logoColor={logoColor} logoWhite={logoWhite} />
+    {
+      links.length > 0 && (
+        <nav class="nav" aria-label="Footer navigation">
+          {links.map((link) => (
+            <a class="navLink" href={pageHref(link.slug)}>
+              {link.title}
+            </a>
+          ))}
+        </nav>
+      )
+    }
+  </div>
+  <p class="copyright">© {new Date().getFullYear()} Nick Vogel. All rights reserved</p>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid light-dark(var(--light-gray), var(--dark-gray));
+    padding: var(--space-12) var(--space-6);
+    @media (min-width: 768px) {
+      padding: var(--space-16) var(--space-8);
+    }
+    @media (min-width: 1024px) {
+      padding: var(--space-20) var(--space-12);
+    }
+  }
+
+  .content {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-6);
+    @media (min-width: 768px) {
+      gap: var(--space-8);
+    }
+  }
+
+  .logo {
+    max-width: 180px;
+    @media (min-width: 768px) {
+      max-width: 200px;
+    }
+
+    /* A fixed height, so a square icon and a wide wordmark both fit. */
+    & :global(img) {
+      height: 48px;
+      width: auto;
+    }
+  }
+
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2) var(--space-6);
+    @media (min-width: 768px) {
+      gap: var(--space-2) var(--space-8);
+    }
+  }
+
+  .navLink {
+    text-decoration: none;
+    color: light-dark(var(--black), var(--white));
+    padding: var(--space-2);
+    transition: color var(--transition-medium);
+    font-size: 0.9rem;
+
+    &:hover {
+      color: light-dark(var(--black-50), var(--white-50));
+    }
+
+    @media (min-width: 768px) {
+      font-size: 1rem;
+    }
+  }
+
+  .copyright {
+    margin: var(--space-4) 0;
+    font-size: 0.85rem;
+    color: light-dark(var(--dark-gray), var(--light-gray));
+    text-align: center;
+    @media (min-width: 768px) {
+      font-size: 0.9rem;
+    }
+  }
+</style>

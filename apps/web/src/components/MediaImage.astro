@@ -1,0 +1,24 @@
+---
+import { Image } from 'astro:assets'
+import type { Media } from 'cms/types'
+import { mediaFile, type MediaSize } from '../lib/media'
+
+type Props = {
+  image: Media | string | null | undefined
+  size?: MediaSize
+  class?: string
+}
+
+// The wrapper's styles live in global.css, shared with the rich text upload converter. The rest
+// carries the parent's scope attribute, so the parent can style the wrapper by its class.
+const { image, size, class: className, ...rest } = Astro.props
+const file = mediaFile(image, size)
+---
+
+{
+  file && (
+    <div class:list={['imageWrapper', className]} {...rest}>
+      <Image src={file.url} alt={file.alt} width={file.width} height={file.height} />
+    </div>
+  )
+}

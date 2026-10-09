@@ -1,0 +1,76 @@
+---
+import type { Media } from 'cms/types'
+import type { PostPreviewData } from '../lib/cms'
+import { postHref } from '../lib/links'
+import Header from './Header.astro'
+import MediaImage from './MediaImage.astro'
+import PostMeta from './PostMeta.astro'
+
+type Props = {
+  post: PostPreviewData
+  // featured shows the title as a heading. header leaves it to the post page's own h1.
+  variant?: 'featured' | 'header'
+  showLink?: boolean
+  imageSize?: keyof NonNullable<Media['sizes']>
+  class?: string
+}
+
+const { post, variant = 'featured', showLink = true, imageSize = 'fullSize', class: className } = Astro.props
+const { slug, title, summary, featuredImage } = post
+const Wrapper = showLink ? 'a' : 'div'
+---
+
+<Wrapper class:list={['preview', className]} href={showLink ? postHref(slug) : undefined}>
+  <MediaImage image={featuredImage} size={imageSize} />
+  <div class="content">
+    {variant === 'featured' && <Header as="h3" align="left">{title}</Header>}
+    <div class="meta">
+      <PostMeta post={post} showCategory />
+    </div>
+    {summary && <p class="summary">{summary}</p>}
+  </div>
+</Wrapper>
+
+<style>
+  .preview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+    color: inherit;
+    text-decoration: none;
+
+    :global(img) {
+      transition: transform var(--transition-medium), filter var(--transition-medium);
+    }
+
+    @media (min-width: 768px) {
+      &:hover :global(img) {
+        transform: scale(1.02);
+      }
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    font-size: 0.875rem;
+    color: light-dark(var(--dark-gray), var(--light-gray));
+    margin-bottom: var(--space-2);
+  }
+
+  .summary {
+    color: light-dark(var(--dark-gray), var(--light-gray));
+    margin-top: var(--space-4);
+  }
+</style>

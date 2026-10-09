@@ -1,0 +1,367 @@
+/* Ported from apps/cms/src/app/(frontend)/styles.css. The base layout imports it once for every page. */
+:root {
+    --font-mono: 'Roboto Mono', monospace;
+    --font-body: system-ui, sans-serif;
+    color-scheme: light dark;
+
+    /* Colors */
+    --white: rgb(235, 235, 235);
+    --white-50: rgba(235, 235, 235, 0.50);
+    --black: rgb(30, 30, 30);
+    --black-50: rgba(30, 30, 30, 0.50);
+    --dark-gray: #4a4a4a;
+    --light-gray: #b0b0b0;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+    --shadow-md: 0 4px 8px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.4));
+    --shadow-lg: 0 8px 16px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5));
+
+    /* Surface treatments */
+    --surface-subtle: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03));
+    --border-subtle: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
+
+    /* Badge */
+    --badge-background: light-dark(var(--black), var(--white));
+    --badge-text: light-dark(var(--white), var(--black));
+    --transluscent: light-dark(var(--white-50), var(--black-50));
+
+    /* Section backgrounds */
+    --section-bg-primary: light-dark(#f5f5f5, #1a1a1a);
+    --section-bg-secondary: light-dark(#ffffff, #0a0a0a);
+
+    /* Spacing scale (multiples of var(--space-1)) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+    --space-20: 5rem;
+
+    /* Border radius */
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 10px;
+    --radius-pill: 50px;
+    --radius-full: 9999px;
+
+    /* Transitions */
+    --transition-base: 0.2s ease;
+    --transition-medium: 0.3s ease;
+    --transition-slow: 0.4s ease-in-out;
+
+    /* Container */
+    --container-max: 1200px;
+
+     /* Z-index scale */
+    --z-content: 1;
+    --z-overlay: 99;
+    --z-nav: 100;
+    --z-nav-top: 102;
+
+    /*
+     * Breakpoints
+     * Tablet: 768px
+     * Desktop: 1024px
+     * Wide: 1280px
+     */
+
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 18px;
+    line-height: 32px;
+
+    background: light-dark(var(--white), var(--black));
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 32px;
+
+    margin: 0;
+    color: light-dark(var(--black), var(--white));
+
+    @media (max-width: 1024px) {
+        font-size: 15px;
+        line-height: 24px;
+    }
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+h1 {
+    margin: 40px 0;
+    font-size: 64px;
+    line-height: 70px;
+    font-weight: bold;
+
+    @media (max-width: 1024px) {
+        margin: 24px 0;
+        font-size: 42px;
+        line-height: 42px;
+    }
+
+    @media (max-width: 768px) {
+        font-size: 38px;
+        line-height: 38px;
+    }
+
+    @media (max-width: 400px) {
+        font-size: 32px;
+        line-height: 32px;
+    }
+}
+
+p {
+    margin: 24px 0;
+}
+
+a {
+    color: currentColor;
+
+    &:focus {
+        opacity: 0.8;
+        outline: none;
+    }
+
+    &:active {
+        opacity: 0.7;
+        outline: none;
+    }
+}
+
+svg {
+    vertical-align: middle;
+}
+
+/*
+ * The frame around a media image. Global so that MediaImage and the rich text upload converter, which
+ * renders an HTML string, share it. A parent overrides it through a scoped class, whose scope
+ * attribute makes it more specific.
+ */
+.imageWrapper {
+    position: relative;
+    border-radius: var(--radius-lg);
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    margin-bottom: var(--space-4);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+
+    img {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: filter var(--transition-medium);
+        @media (prefers-color-scheme: dark) {
+            filter: brightness(0.85) contrast(0.9);
+        }
+    }
+
+    @media (min-width: 768px) {
+        &:hover img {
+            filter: brightness(0.98) contrast(1);
+
+            @media (prefers-color-scheme: dark) {
+                filter: brightness(0.9) contrast(0.95);
+            }
+        }
+    }
+}
+
+/*
+ * A Cards or TextAndImage block inside rich text. The converters render it as an HTML string, which
+ * carries no scope attribute, so these rules copy the scoped styles of Section, Container, Header,
+ * Body and the two block components. Keep them in step with those components.
+ */
+.richTextBlock {
+    position: relative;
+    padding: var(--space-12) var(--space-6);
+    overflow: hidden;
+
+    @media (min-width: 768px) {
+        padding: var(--space-16) var(--space-8);
+    }
+
+    @media (min-width: 1024px) {
+        padding: var(--space-20) var(--space-12);
+    }
+
+    &[data-background="primary"] {
+        background-color: var(--section-bg-primary);
+    }
+
+    &[data-background="secondary"] {
+        background-color: var(--section-bg-secondary);
+    }
+
+    > .container {
+        max-width: var(--container-max);
+        margin: 0 auto;
+    }
+
+    .h2,
+    .h3 {
+        line-height: 1.3;
+    }
+
+    .h2 {
+        font-size: 2rem;
+        margin: 0 auto var(--space-8);
+        line-height: 1.2;
+        font-weight: 700;
+        text-align: center;
+
+        @media (min-width: 768px) {
+            font-size: 2.5rem;
+            margin-bottom: var(--space-12);
+        }
+
+        @media (min-width: 1024px) {
+            font-size: 3rem;
+            margin-bottom: var(--space-16);
+        }
+    }
+
+    .h3 {
+        font-size: 1.125rem;
+        margin: 0;
+        font-weight: 400;
+
+        @media (min-width: 769px) {
+            font-size: 1.175rem;
+        }
+
+        @media (min-width: 1024px) {
+            font-size: 1.2rem;
+        }
+    }
+
+    .left {
+        text-align: left;
+    }
+
+    .center {
+        text-align: center;
+    }
+
+    .body {
+        font-size: 1rem;
+        line-height: 1.6;
+
+        @media (min-width: 768px) {
+            font-size: 1.125rem;
+            line-height: 1.7;
+        }
+
+        p:first-child {
+            margin-top: 0;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    /* TextAndImage */
+    .layout {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-8);
+
+        @media (min-width: 768px) {
+            flex-direction: row;
+            align-items: flex-start;
+            gap: var(--space-12);
+        }
+    }
+
+    .layout[data-layout="left"] {
+        @media (min-width: 768px) {
+            flex-direction: row-reverse;
+        }
+    }
+
+    .textContent,
+    .layout > .image {
+        flex: 1;
+    }
+
+    /* Cards */
+    .grid {
+        margin: 0 auto;
+        display: grid;
+        gap: var(--space-8);
+        grid-template-columns: 1fr;
+
+        @media (min-width: 768px) {
+            gap: var(--space-4);
+
+            &[data-cards="2"],
+            &[data-cards="4"] {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            &[data-cards="3"] {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            &[data-cards="4"] {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    }
+
+    .card {
+        display: flex;
+        flex-direction: column;
+
+        &:hover > .image,
+        &:hover > .content {
+            @media (min-width: 768px) {
+                transform: translateY(-4px);
+                box-shadow: var(--shadow-lg);
+            }
+        }
+    }
+
+    .content {
+        padding: var(--space-6);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        flex: 1;
+        background-color: light-dark(var(--white), var(--black));
+        box-shadow: var(--shadow-md);
+        border-radius: var(--radius-lg);
+        transition: transform var(--transition-medium), box-shadow var(--transition-medium);
+
+        @media (min-width: 768px) {
+            padding: var(--space-8);
+        }
+    }
+
+    .title {
+        color: light-dark(var(--black), var(--white));
+    }
+}

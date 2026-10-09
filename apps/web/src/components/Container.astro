@@ -1,0 +1,15 @@
+---
+// These styles are copied to global.css under .richTextBlock for the rich text blocks, so keep the
+// two in step.
+---
+
+<div class="container">
+  <slot />
+</div>
+
+<style>
+  .container {
+    max-width: var(--container-max);
+    margin: 0 auto;
+  }
+</style>

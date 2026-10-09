@@ -1,0 +1,33 @@
+---
+import { getImage } from 'astro:assets'
+import type { HTMLAttributes } from 'astro/types'
+import type { Logos } from '../lib/chrome'
+import { mediaFile } from '../lib/media'
+
+type Props = Logos & HTMLAttributes<'a'>
+
+// The rest carries the parent's scope attribute, so the parent can style the link.
+const { logoColor, logoWhite, ...rest } = Astro.props
+const color = mediaFile(logoColor)
+const white = mediaFile(logoWhite)
+
+// <Picture> has no art direction, so the dark-mode <source> is built from getImage().
+const [colorImage, whiteImage] =
+  color && white
+    ? await Promise.all([
+        getImage({ src: color.url, width: color.width, height: color.height }),
+        getImage({ src: white.url, width: white.width, height: white.height }),
+      ])
+    : []
+---
+
+{
+  colorImage && whiteImage && (
+    <a href="/" {...rest}>
+      <picture>
+        <source srcset={whiteImage.src} media="(prefers-color-scheme: dark)" />
+        <img src={colorImage.src} alt={color?.alt} {...colorImage.attributes} />
+      </picture>
+    </a>
+  )
+}

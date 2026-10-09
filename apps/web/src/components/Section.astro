@@ -1,0 +1,36 @@
+---
+// These styles are copied to global.css under .richTextBlock for the rich text blocks, so keep the
+// two in step.
+
+type Props = { backgroundColor?: 'primary' | 'secondary' | null }
+
+const { backgroundColor } = Astro.props
+---
+
+<section class="container" data-background={backgroundColor || 'primary'}>
+  <slot />
+</section>
+
+<style>
+  .container {
+    position: relative;
+    padding: var(--space-12) var(--space-6);
+    overflow: hidden;
+
+    @media (min-width: 768px) {
+      padding: var(--space-16) var(--space-8);
+    }
+
+    @media (min-width: 1024px) {
+      padding: var(--space-20) var(--space-12);
+    }
+
+    &[data-background="primary"] {
+      background-color: var(--section-bg-primary);
+    }
+
+    &[data-background="secondary"] {
+      background-color: var(--section-bg-secondary);
+    }
+  }
+</style>

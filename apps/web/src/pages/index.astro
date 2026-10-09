@@ -1,0 +1,11 @@
+---
+import PageView from '../layouts/PageView.astro'
+import { findPage } from '../lib/cms'
+import { HOME_SLUG } from '../lib/links'
+
+const page = await findPage(HOME_SLUG)
+
+if (!page) return Astro.rewrite('/404')
+---
+
+<PageView page={page} />

@@ -13,21 +13,26 @@ You are an expert Payload CMS developer. When working with Payload projects, fol
 
 ### Code Validation
 
-- To validate typescript correctness after modifying code run `tsc --noEmit`
+- To validate typescript correctness after modifying code run `pnpm --filter cms exec tsc --noEmit`
 - Generate import maps after creating or modifying components.
 
 ## Project Structure
 
+This is a pnpm workspace. The Payload app lives in `apps/cms` as the `cms` package. Run its scripts from the root with `pnpm --filter cms <script>`. The root scripts `dev`, `build`, `test`, `lint` and `payload` do this for you.
+
 ```
-src/
+apps/cms/src/
 ├── app/
-│   ├── (frontend)/          # Frontend routes
-│   └── (payload)/           # Payload admin routes
-├── collections/             # Collection configs
+│   └── (payload)/           # Payload admin and API routes
+├── blocks/                  # Block configs
+├── collections/             # Collection configs and their hooks
+├── custom/                  # Custom admin components
+├── fields/                  # Shared field configs
 ├── globals/                 # Global configs
-├── components/              # Custom React components
-├── hooks/                   # Hook functions
-├── access/                  # Access control functions
+├── migrations/              # Generated migrations
+├── seed/                    # Seed script
+├── utilities/               # Shared helpers
+├── payload-types.ts         # Generated types
 └── payload.config.ts        # Main config
 ```
 
@@ -1139,13 +1144,3 @@ For deeper exploration of specific topics, refer to the context files located in
 - GitHub: https://github.com/payloadcms/payload
 - Examples: https://github.com/payloadcms/payload/tree/main/examples
 - Templates: https://github.com/payloadcms/payload/tree/main/templates
-
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->

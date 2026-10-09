@@ -1,0 +1,114 @@
+---
+type Props = {
+  currentPage: number
+  totalPages: number
+  // The URL of a page, so the caller keeps its own params, such as the category, on every link.
+  href: (page: number) => string
+}
+
+const { currentPage, totalPages, href } = Astro.props
+
+// Previous and Next render like the numbers. A page outside the list leaves its item disabled.
+const items: { text: string; page: number; label?: string; arrow?: boolean }[] = [
+  { text: 'Previous', page: currentPage - 1, label: 'Previous page', arrow: true },
+  ...Array.from({ length: totalPages }, (_, index) => ({ text: String(index + 1), page: index + 1 })),
+  { text: 'Next', page: currentPage + 1, label: 'Next page', arrow: true },
+]
+---
+
+{
+  totalPages > 1 && (
+    <nav aria-label="Pagination" class="pagination">
+      <ol class="list">
+        {items.map(({ text, page, label, arrow }) => (
+          <li>
+            {page === currentPage ? (
+              <span class="link active" aria-current="page">
+                {text}
+              </span>
+            ) : page < 1 || page > totalPages ? (
+              <span class:list={['link', { arrow }, 'disabled']} aria-disabled="true">
+                {text}
+              </span>
+            ) : (
+              <a href={href(page)} class:list={['link', { arrow }]} aria-label={label}>
+                {text}
+              </a>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<style>
+  .pagination {
+    margin-top: var(--space-8);
+  }
+
+  .list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: light-dark(var(--black), var(--white));
+    background: light-dark(var(--white), var(--black));
+    box-shadow: var(--shadow-sm);
+    transition: background var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+
+    &:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid light-dark(var(--black), var(--white));
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 768px) {
+      min-width: 2.25rem;
+      height: 2.25rem;
+      padding: 0 var(--space-2);
+      font-size: 0.8125rem;
+    }
+  }
+
+  .active {
+    background: light-dark(var(--black), var(--white));
+    color: light-dark(var(--white), var(--black));
+    pointer-events: none;
+  }
+
+  .disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .arrow {
+    font-size: 0.8125rem;
+    letter-spacing: 0.025em;
+
+    @media (max-width: 768px) {
+      font-size: 0.75rem;
+    }
+  }
+</style>
