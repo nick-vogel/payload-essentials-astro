@@ -16,7 +16,7 @@ This is a pnpm workspace with two apps:
 
 ## Run it locally
 
-You need Node 22.12 or later, pnpm, and a Postgres server.
+You need Node 22.23.4 or later, pnpm, and a Postgres server.
 
 1. Install the dependencies from the repo root. The lockfile is made with pnpm 12.9.1, the version Cloudways Velocity installs with:
 
@@ -113,7 +113,7 @@ Environment variables:
 - `PAYLOAD_SECRET`: the same value as the CMS.
 - `SITE_URL` (optional): the web app's Velocity URL. The sitemap and `og:url` use it. Without it, they use the origin of the request.
 
-The web app needs Node 22.12 or later.
+The web app needs Node 22.23.4 or later.
 
 ### Change the dependencies
 
